@@ -1,0 +1,25 @@
+<UserControl x:Class="MecAppIN.Views.BuscarOrcamentosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <DataGrid ItemsSource="{Binding Orcamentos}"
+              AutoGenerateColumns="False"
+              Margin="20"
+              IsReadOnly="True">
+
+        <DataGrid.Columns>
+            <DataGridTextColumn Header="Data"
+                                Binding="{Binding Data, StringFormat=dd/MM/yyyy}"/>
+
+            <DataGridTextColumn Header="Cliente"
+                                Binding="{Binding Cliente.Nome}"/>
+
+            <DataGridTextColumn Header="Veículo"
+                                Binding="{Binding Veiculo}"/>
+
+            <DataGridTextColumn Header="Total"
+                                Binding="{Binding Total, StringFormat=C}"/>
+        </DataGrid.Columns>
+    </DataGrid>
+
+</UserControl>

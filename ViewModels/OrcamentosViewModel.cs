@@ -72,6 +72,7 @@ namespace MecAppIN.ViewModels
         // COMMANDS
         // ===============================
         public ICommand GerarExcelCommand { get; }
+        public ICommand SalvarOrcamentoCommand { get; }
 
         // ===============================
         // CONSTRUTOR
@@ -95,7 +96,7 @@ namespace MecAppIN.ViewModels
                     ValorUnitario = 500
                 }
             };
-
+            SalvarOrcamentoCommand = new RelayCommand(SalvarOrcamento);
             GerarExcelCommand = new RelayCommand(GerarExcel);
         }
 
@@ -243,6 +244,40 @@ namespace MecAppIN.ViewModels
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
         }
+
+        private void SalvarOrcamento()
+        {
+            using var db = new AppDbContext();
+
+            // garante cliente
+            var cliente = ObterOuCriarCliente();
+            if (cliente == null)
+                return;
+
+            var orcamento = new Orcamentos
+            {
+                ClienteId = cliente.Id,
+                Veiculo = Veiculo,
+                Placa = Placa,
+                Data = DateTime.Now,
+                Total = Itens.Sum(i => i.Quantidade * i.ValorUnitario),
+                Itens = Itens.Select(i => new ItemOrcamento
+                {
+                    Servico = i.Servico,
+                    Quantidade = i.Quantidade,
+                    ValorUnitario = i.ValorUnitario
+                }).ToList()
+            };
+
+            db.Orcamentos.Add(orcamento);
+            db.SaveChanges();
+
+            MessageBox.Show("Orçamento salvo com sucesso!",
+                "Sucesso",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
 
         // ===============================
         // INotifyPropertyChanged

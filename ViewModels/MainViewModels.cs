@@ -22,6 +22,8 @@ namespace MecAppIN.ViewModels
         public ICommand AbrirClientesCommand { get; }
         public ICommand AbrirOrcamentosCommand { get; }
         public ICommand AbrirOrdemServicoCommand { get; }
+        public ICommand AbrirBuscarOrcamentosCommand { get; }
+
 
         public MainViewModel()
         {
@@ -33,6 +35,10 @@ namespace MecAppIN.ViewModels
 
             AbrirOrdemServicoCommand = new RelayCommand(() =>
                 TelaAtual = new OrdemServicosViewModel());
+                
+            AbrirBuscarOrcamentosCommand = new RelayCommand(() =>
+                TelaAtual = new BuscarOrcamentosViewModel());
+
 
             // Tela inicial
             TelaAtual = new ClientesViewModel();
@@ -44,4 +50,3 @@ namespace MecAppIN.ViewModels
     }
 }
 
-    
