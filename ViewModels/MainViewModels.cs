@@ -38,6 +38,8 @@ namespace MecAppIN.ViewModels
                 
             AbrirBuscarOrcamentosCommand = new RelayCommand(() =>
                 TelaAtual = new BuscarOrcamentosViewModel());
+                
+                
 
 
             // Tela inicial

@@ -3,8 +3,10 @@ using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -16,8 +18,30 @@ namespace MecAppIN.ViewModels
         // ===============================
         // CABEÇALHO DO ORÇAMENTO
         // ===============================
-        public string Veiculo { get; set; }
-        public string Placa { get; set; }
+        private string _veiculo;
+        public string Veiculo
+        {
+            get => _veiculo;
+            set
+            {
+                _veiculo = value;
+                OnPropertyChanged();
+                AtualizarEstadoSalvar();
+            }
+        }
+
+        private string _placa;
+        public string Placa
+        {
+            get => _placa;
+            set
+            {
+                _placa = value;
+                OnPropertyChanged();
+                AtualizarEstadoSalvar();
+            }
+        }
+
         public DateTime DataOrcamento { get; set; } = DateTime.Now;
 
         // ===============================
@@ -26,7 +50,6 @@ namespace MecAppIN.ViewModels
         public ObservableCollection<Clientes> Clientes { get; set; }
 
         public bool IsSelecionandoCliente { get; set; }
-
 
         private Clientes _clienteSelecionado;
         public Clientes ClienteSelecionado
@@ -52,11 +75,8 @@ namespace MecAppIN.ViewModels
                 _textoClienteDigitado = value;
                 OnPropertyChanged();
 
-
                 if (!IsSelecionandoCliente)
-                {
                     BuscarClientes();
-                }
             }
         }
 
@@ -80,23 +100,27 @@ namespace MecAppIN.ViewModels
         public OrcamentosViewModel()
         {
             Clientes = new ObservableCollection<Clientes>();
-
             Itens = new ObservableCollection<ItemOrcamento>();
 
-            TiposMotor = new ObservableCollection<string>
-    {
-        "Gasolina",
-        "Diesel"
-    };
+            Itens.CollectionChanged += (s, e) => AtualizarEstadoSalvar();
 
-            TipoMotorSelecionado = "Gasolina"; // padrão
+            TiposMotor = new ObservableCollection<string>
+            {
+                "Gasolina",
+                "Diesel"
+            };
+
+            TipoMotorSelecionado = "Gasolina";
 
             AtualizarItensPorMotor();
 
-            SalvarOrcamentoCommand = new RelayCommand(SalvarOrcamento);
+            SalvarOrcamentoCommand = new RelayCommand(
+                SalvarOrcamento,
+                PodeSalvarOrcamento
+            );
+
             GerarExcelCommand = new RelayCommand(GerarExcel);
         }
-
 
         // ===============================
         // TIPO DE MOTOR
@@ -118,37 +142,17 @@ namespace MecAppIN.ViewModels
             }
         }
 
-        private List<ItemOrcamento> ItensGasolina = new()
-       {
-            new ItemOrcamento
-           {
-   Servico = "Esmerilhar cabeçote",
-        Quantidade = 8,
-        ValorUnitario = 30
-          },
-    new ItemOrcamento
-    {
-        Servico = "Retífica bloco",
-        Quantidade = 1,
-        ValorUnitario = 500
-    }
-};
+        private readonly List<ItemOrcamento> ItensGasolina = new()
+        {
+            new ItemOrcamento { Servico = "Esmerilhar cabeçote", Quantidade = 8, ValorUnitario = 30 },
+            new ItemOrcamento { Servico = "Retífica bloco", Quantidade = 1, ValorUnitario = 500 }
+        };
 
-        private List<ItemOrcamento> ItensDiesel = new()
-{
-    new ItemOrcamento
-    {
-        Servico = "Esmerilhar cabeçote",
-        Quantidade = 8,
-        ValorUnitario = 45
-    },
-    new ItemOrcamento
-    {
-        Servico = "Retífica bloco",
-        Quantidade = 1,
-        ValorUnitario = 800
-    }
-};
+        private readonly List<ItemOrcamento> ItensDiesel = new()
+        {
+            new ItemOrcamento { Servico = "Esmerilhar cabeçote", Quantidade = 8, ValorUnitario = 45 },
+            new ItemOrcamento { Servico = "Retífica bloco", Quantidade = 1, ValorUnitario = 800 }
+        };
 
         private void AtualizarItensPorMotor()
         {
@@ -169,11 +173,118 @@ namespace MecAppIN.ViewModels
             }
         }
 
+        private void GerarExcel()
+{
+    try
+    {
+        var cliente = ObterOuCriarCliente();
+        if (cliente == null)
+            return;
 
+        // Validações básicas
+        if (string.IsNullOrWhiteSpace(Veiculo) || string.IsNullOrWhiteSpace(Placa))
+        {
+            MessageBox.Show("Informe o veículo e a placa antes de gerar o Excel.",
+                            "Atenção",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+            return;
+        }
+
+        if (Itens == null || !Itens.Any())
+        {
+            MessageBox.Show("Adicione ao menos um serviço ao orçamento.",
+                            "Atenção",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+            return;
+        }
+
+        // Escolher onde salvar
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "Arquivo Excel (*.xlsx)|*.xlsx",
+            FileName = $"Orcamento_{cliente.Nome}_{DateTime.Now:yyyyMMdd}.xlsx"
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("Orçamento");
+
+        // ===============================
+        // CABEÇALHO
+        // ===============================
+        ws.Cell("A1").Value = "Cliente:";
+        ws.Cell("B1").Value = cliente.Nome;
+
+        ws.Cell("A2").Value = "Endereço:";
+        ws.Cell("B2").Value = cliente.Endereco;
+
+        ws.Cell("A3").Value = "Telefone:";
+        ws.Cell("B3").Value = cliente.Telefone;
+
+        ws.Cell("A4").Value = "Veículo:";
+        ws.Cell("B4").Value = Veiculo;
+
+        ws.Cell("A5").Value = "Placa:";
+        ws.Cell("B5").Value = Placa;
+
+        ws.Cell("A6").Value = "Data:";
+        ws.Cell("B6").Value = DataOrcamento.ToShortDateString();
+
+        // ===============================
+        // TABELA
+        // ===============================
+        ws.Cell("A8").Value = "Serviço";
+        ws.Cell("B8").Value = "Qtde";
+        ws.Cell("C8").Value = "Valor Unit";
+        ws.Cell("D8").Value = "Total";
+
+        int linha = 9;
+        foreach (var item in Itens)
+        {
+            ws.Cell(linha, 1).Value = item.Servico;
+            ws.Cell(linha, 2).Value = item.Quantidade;
+            ws.Cell(linha, 3).Value = item.ValorUnitario;
+            ws.Cell(linha, 4).FormulaA1 = $"=B{linha}*C{linha}";
+            linha++;
+        }
+
+        ws.Cell(linha + 1, 3).Value = "TOTAL GERAL:";
+        ws.Cell(linha + 1, 4).FormulaA1 = $"=SUM(D9:D{linha - 1})";
+
+        ws.Columns().AdjustToContents();
+
+        // Salva
+        wb.SaveAs(dialog.FileName);
+
+        // Abre automaticamente
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = dialog.FileName,
+            UseShellExecute = true
+        });
+
+        MessageBox.Show("Excel gerado com sucesso!",
+                        "Sucesso",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(
+            "Erro ao gerar Excel:\n\n" + ex.Message,
+            "Erro",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+    }
+}
 
 
         // ===============================
-        // BUSCAR CLIENTES NO BANCO
+        // BUSCAR CLIENTES
         // ===============================
         private void BuscarClientes()
         {
@@ -184,10 +295,7 @@ namespace MecAppIN.ViewModels
             if (string.IsNullOrWhiteSpace(TextoClienteDigitado))
                 return;
 
-            var termo = TextoClienteDigitado?.Trim();
-
-            if (string.IsNullOrWhiteSpace(termo))
-                return;
+            var termo = TextoClienteDigitado.Trim();
 
             var lista = db.Clientes
                 .Where(c => EF.Functions.Like(c.Nome, $"%{termo}%"))
@@ -195,14 +303,10 @@ namespace MecAppIN.ViewModels
                 .Take(20)
                 .ToList();
 
-
             foreach (var c in lista)
                 Clientes.Add(c);
         }
 
-        // ===============================
-        // ATUALIZA DADOS AO SELECIONAR
-        // ===============================
         private void AtualizarDadosCliente()
         {
             if (ClienteSelecionado == null)
@@ -217,24 +321,21 @@ namespace MecAppIN.ViewModels
         }
 
         // ===============================
-        // OBTÉM OU CRIA CLIENTE
+        // CLIENTE
         // ===============================
         private Clientes ObterOuCriarCliente()
         {
             using var db = new AppDbContext();
 
-            // Cliente já selecionado
             if (ClienteSelecionado != null && ClienteSelecionado.Id > 0)
                 return ClienteSelecionado;
 
-            // Verifica se já existe pelo nome
             var existente = db.Clientes
                 .FirstOrDefault(c => c.Nome == TextoClienteDigitado);
 
             if (existente != null)
                 return existente;
 
-            // Pergunta se deseja salvar
             var resultado = MessageBox.Show(
                 $"Cliente \"{TextoClienteDigitado}\" não encontrado.\nDeseja cadastrar?",
                 "Novo cliente",
@@ -258,98 +359,53 @@ namespace MecAppIN.ViewModels
         }
 
         // ===============================
-        // GERAR EXCEL
+        // SALVAR ORÇAMENTO
         // ===============================
-        private void GerarExcel()
-        {
-            var cliente = ObterOuCriarCliente();
-            if (cliente == null)
-                return;
-
-            var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Orçamento");
-
-            // CABEÇALHO
-            ws.Cell("A1").Value = "Cliente:";
-            ws.Cell("B1").Value = cliente.Nome;
-
-            ws.Cell("A2").Value = "Endereço:";
-            ws.Cell("B2").Value = cliente.Endereco;
-
-            ws.Cell("A3").Value = "Telefone:";
-            ws.Cell("B3").Value = cliente.Telefone;
-
-            ws.Cell("A4").Value = "Veículo:";
-            ws.Cell("B4").Value = Veiculo;
-
-            ws.Cell("A5").Value = "Placa:";
-            ws.Cell("B5").Value = Placa;
-
-            ws.Cell("A6").Value = "Data:";
-            ws.Cell("B6").Value = DataOrcamento.ToShortDateString();
-
-            // TABELA
-            ws.Cell("A8").Value = "Serviço";
-            ws.Cell("B8").Value = "Qtde";
-            ws.Cell("C8").Value = "Valor Unit";
-            ws.Cell("D8").Value = "Total";
-
-            int linha = 9;
-            foreach (var item in Itens)
-            {
-                ws.Cell(linha, 1).Value = item.Servico;
-                ws.Cell(linha, 2).Value = item.Quantidade;
-                ws.Cell(linha, 3).Value = item.ValorUnitario;
-                ws.Cell(linha, 4).FormulaA1 = $"=B{linha}*C{linha}";
-                linha++;
-            }
-
-            ws.Cell(linha + 1, 3).Value = "TOTAL GERAL:";
-            ws.Cell(linha + 1, 4).FormulaA1 = $"=SUM(D9:D{linha - 1})";
-
-            ws.Columns().AdjustToContents();
-
-            wb.SaveAs("orcamento.xlsx");
-
-            MessageBox.Show("Orçamento gerado com sucesso!",
-                            "Sucesso",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-        }
-
         private void SalvarOrcamento()
         {
-            using var db = new AppDbContext();
-
-            // garante cliente
-            var cliente = ObterOuCriarCliente();
-            if (cliente == null)
-                return;
-
-            var orcamento = new Orcamentos
+            try
             {
-                ClienteId = cliente.Id,
-                Veiculo = Veiculo,
-                Placa = Placa,
-                Data = DateTime.Now,
-                Total = Itens.Sum(i => i.Quantidade * i.ValorUnitario),
-                Itens = Itens.Select(i => new ItemOrcamento
+                using var db = new AppDbContext();
+
+                var cliente = ObterOuCriarCliente();
+                if (cliente == null)
+                    return;
+
+                var orcamento = new Orcamentos
                 {
-                    Servico = i.Servico,
-                    Quantidade = i.Quantidade,
-                    ValorUnitario = i.ValorUnitario
-                }).ToList()
-            };
+                    ClienteId = cliente.Id,
+                    Veiculo = Veiculo.Trim(),
+                    Placa = Placa.Trim(),
+                    Data = DateTime.Now,
+                    Total = Itens.Sum(i => i.Quantidade * i.ValorUnitario),
+                    Itens = Itens.ToList()
+                };
 
-            db.Orcamentos.Add(orcamento);
-            db.SaveChanges();
+                db.Orcamentos.Add(orcamento);
+                db.SaveChanges();
 
-            MessageBox.Show("Orçamento salvo com sucesso!",
-                "Sucesso",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBox.Show("Orçamento salvo com sucesso!",
+                                "Sucesso",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
+        private bool PodeSalvarOrcamento()
+        {
+            return !string.IsNullOrWhiteSpace(Veiculo)
+                && !string.IsNullOrWhiteSpace(Placa)
+                && Itens.Any();
+        }
+
+        private void AtualizarEstadoSalvar()
+        {
+            (SalvarOrcamentoCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        }
 
         // ===============================
         // INotifyPropertyChanged
