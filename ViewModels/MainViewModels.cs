@@ -41,7 +41,7 @@ namespace MecAppIN.ViewModels
 
 
             // Tela inicial
-            TelaAtual = new ClientesViewModel();
+            TelaAtual = new OrdemServicosViewModel();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
