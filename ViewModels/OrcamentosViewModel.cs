@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -51,7 +52,7 @@ namespace MecAppIN.ViewModels
                 _textoClienteDigitado = value;
                 OnPropertyChanged();
 
-                
+
                 if (!IsSelecionandoCliente)
                 {
                     BuscarClientes();
@@ -110,11 +111,17 @@ namespace MecAppIN.ViewModels
             if (string.IsNullOrWhiteSpace(TextoClienteDigitado))
                 return;
 
+            var termo = TextoClienteDigitado?.Trim();
+
+            if (string.IsNullOrWhiteSpace(termo))
+                return;
+
             var lista = db.Clientes
-                          .Where(c => c.Nome.Contains(TextoClienteDigitado))
-                          .OrderBy(c => c.Nome)
-                          .Take(20)
-                          .ToList();
+                .Where(c => EF.Functions.Like(c.Nome, $"%{termo}%"))
+                .OrderBy(c => c.Nome)
+                .Take(20)
+                .ToList();
+
 
             foreach (var c in lista)
                 Clientes.Add(c);
