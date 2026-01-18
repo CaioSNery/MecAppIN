@@ -33,7 +33,7 @@
 
         <!-- MENU LATERAL -->
         <Grid Grid.Column="0"
-                Background="#2D2D30">
+              Background="#2D2D30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <!-- Cabeçalho + logo -->
@@ -46,7 +46,7 @@
                     Background="#000000"
                     Padding="10">
 
-                <StackPanel>
+                <StackPanel HorizontalAlignment="Center">
 
                     <!-- Nome da loja -->
                     <TextBlock Text="B.N.W Retífica e Oficina"
@@ -54,7 +54,7 @@
                                FontSize="18"
                                FontWeight="Bold"
                                TextAlignment="Center"
-                               Margin="0,10,0,10"
+                               Margin="0,10,0,8"
                                TextWrapping="Wrap"/>
 
                     <!-- LOGO -->
@@ -62,10 +62,16 @@
                            Width="80"
                            Height="80"
                            HorizontalAlignment="Center"
-                           Margin="0,0,0,10"/>
+                           Margin="0,0,0,6"/>
 
+                    <!-- DATA E HORA -->
+                    <TextBlock Text="{Binding DataHoraAtual}"
+                               Foreground="#B0B0B0"
+                               FontSize="11"
+                               HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
+
 
 
             <!-- BOTÕES -->
