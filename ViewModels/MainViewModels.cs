@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using MecAppIN.Commands;
+using MecAppIN.Models;
 
 
 namespace MecAppIN.ViewModels
@@ -35,16 +36,21 @@ namespace MecAppIN.ViewModels
 
             AbrirOrdemServicoCommand = new RelayCommand(() =>
                 TelaAtual = new OrdemServicosViewModel());
-                
+
             AbrirBuscarOrcamentosCommand = new RelayCommand(() =>
                 TelaAtual = new BuscarOrcamentosViewModel());
-                
-                
+
+
 
 
             // Tela inicial
             TelaAtual = new OrdemServicosViewModel();
         }
+        public void AbrirEdicaoOrcamento(Orcamentos orcamento)
+        {
+            TelaAtual = new OrcamentosViewModel(orcamento);
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         void OnPropertyChanged([CallerMemberName] string p = null)

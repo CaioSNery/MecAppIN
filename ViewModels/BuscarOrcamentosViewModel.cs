@@ -75,8 +75,15 @@ namespace MecAppIN.ViewModels
         // ===============================
         private void Editar()
         {
-            MessageBox.Show("Abrir orçamento para edição (próximo passo).");
+            // Acessa o MainViewModel atual
+            var mainVM = Application.Current.MainWindow.DataContext as MainViewModel;
+
+            if (mainVM == null)
+                return;
+
+            mainVM.AbrirEdicaoOrcamento(OrcamentoSelecionado);
         }
+
 
         // ===============================
         // EXCLUIR
