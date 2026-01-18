@@ -109,6 +109,19 @@
                         <TextBox Width="120"
                                  Text="{Binding Placa, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
+                    <!-- Tipo de Motor -->
+                    <StackPanel Orientation="Horizontal"
+                            Margin="0,10,0,0">
+                        <TextBlock Text="Motor:"
+                                   Width="80"
+                                   VerticalAlignment="Center"/>
+
+                        <ComboBox Width="200"
+                                  ItemsSource="{Binding TiposMotor}"
+                                  SelectedItem="{Binding TipoMotorSelecionado}"/>
+                    </StackPanel>
+
+
 
                 </StackPanel>
             </GroupBox>

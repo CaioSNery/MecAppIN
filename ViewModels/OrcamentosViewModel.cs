@@ -81,24 +81,96 @@ namespace MecAppIN.ViewModels
         {
             Clientes = new ObservableCollection<Clientes>();
 
-            Itens = new ObservableCollection<ItemOrcamento>
-            {
-                new ItemOrcamento
-                {
-                    Servico = "Esmerilhar cabeçote",
-                    Quantidade = 8,
-                    ValorUnitario = 30
-                },
-                new ItemOrcamento
-                {
-                    Servico = "Retífica bloco",
-                    Quantidade = 1,
-                    ValorUnitario = 500
-                }
-            };
+            Itens = new ObservableCollection<ItemOrcamento>();
+
+            TiposMotor = new ObservableCollection<string>
+    {
+        "Gasolina",
+        "Diesel"
+    };
+
+            TipoMotorSelecionado = "Gasolina"; // padrão
+
+            AtualizarItensPorMotor();
+
             SalvarOrcamentoCommand = new RelayCommand(SalvarOrcamento);
             GerarExcelCommand = new RelayCommand(GerarExcel);
         }
+
+
+        // ===============================
+        // TIPO DE MOTOR
+        // ===============================
+        public ObservableCollection<string> TiposMotor { get; set; }
+
+        private string _tipoMotorSelecionado;
+        public string TipoMotorSelecionado
+        {
+            get => _tipoMotorSelecionado;
+            set
+            {
+                if (_tipoMotorSelecionado == value)
+                    return;
+
+                _tipoMotorSelecionado = value;
+                OnPropertyChanged();
+                AtualizarItensPorMotor();
+            }
+        }
+
+        private List<ItemOrcamento> ItensGasolina = new()
+       {
+            new ItemOrcamento
+           {
+   Servico = "Esmerilhar cabeçote",
+        Quantidade = 8,
+        ValorUnitario = 30
+          },
+    new ItemOrcamento
+    {
+        Servico = "Retífica bloco",
+        Quantidade = 1,
+        ValorUnitario = 500
+    }
+};
+
+        private List<ItemOrcamento> ItensDiesel = new()
+{
+    new ItemOrcamento
+    {
+        Servico = "Esmerilhar cabeçote",
+        Quantidade = 8,
+        ValorUnitario = 45
+    },
+    new ItemOrcamento
+    {
+        Servico = "Retífica bloco",
+        Quantidade = 1,
+        ValorUnitario = 800
+    }
+};
+
+        private void AtualizarItensPorMotor()
+        {
+            Itens.Clear();
+
+            var lista = TipoMotorSelecionado == "Diesel"
+                ? ItensDiesel
+                : ItensGasolina;
+
+            foreach (var item in lista)
+            {
+                Itens.Add(new ItemOrcamento
+                {
+                    Servico = item.Servico,
+                    Quantidade = item.Quantidade,
+                    ValorUnitario = item.ValorUnitario
+                });
+            }
+        }
+
+
+
 
         // ===============================
         // BUSCAR CLIENTES NO BANCO
