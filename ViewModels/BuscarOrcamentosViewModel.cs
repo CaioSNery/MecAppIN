@@ -24,6 +24,20 @@ namespace MecAppIN.ViewModels
             }
         }
 
+        private string _textoBuscaCliente;
+        public string TextoBuscaCliente
+        {
+            get => _textoBuscaCliente;
+            set
+            {
+                _textoBuscaCliente = value;
+                Filtrar();
+            }
+        }
+        private List<Orcamentos> _todosOrcamentos;
+
+
+
         // COMMANDS
         public ICommand EditarCommand { get; }
         public ICommand ExcluirCommand { get; }
@@ -58,17 +72,31 @@ namespace MecAppIN.ViewModels
         {
             using var db = new AppDbContext();
 
-            var lista = db.Orcamentos
+            _todosOrcamentos = db.Orcamentos
                 .Include(o => o.Cliente)
                 .Include(o => o.Itens)
                 .OrderByDescending(o => o.Data)
-                .Take(50)
                 .ToList();
 
+            Filtrar();
+        }
+        private void Filtrar()
+        {
             Orcamentos.Clear();
-            foreach (var o in lista)
+
+            var termo = TextoBuscaCliente?.Trim().ToLower();
+
+            var filtrados = string.IsNullOrWhiteSpace(termo)
+                ? _todosOrcamentos
+                : _todosOrcamentos
+                    .Where(o => o.ClienteNome.ToLower().Contains(termo))
+                    .ToList();
+
+            foreach (var o in filtrados)
                 Orcamentos.Add(o);
         }
+
+
 
         // ===============================
         // EDITAR
@@ -91,10 +119,13 @@ namespace MecAppIN.ViewModels
         private void Excluir()
         {
             var resultado = MessageBox.Show(
-                $"Deseja excluir o orçamento do cliente \"{OrcamentoSelecionado.Cliente.Nome}\"?",
-                "Confirmação",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+               $"Deseja excluir o orçamento do cliente \"{OrcamentoSelecionado.NomeClienteExibicao}\"?",
+            "Confirmação",
+             MessageBoxButton.YesNo,
+             MessageBoxImage.Warning);
+
+            if (OrcamentoSelecionado == null)
+              return;
 
             if (resultado != MessageBoxResult.Yes)
                 return;

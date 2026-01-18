@@ -367,10 +367,6 @@ namespace MecAppIN.ViewModels
             {
                 using var db = new AppDbContext();
 
-                var cliente = ObterOuCriarCliente();
-                if (cliente == null)
-                    return;
-
                 Orcamentos orcamento;
 
                 // ===============================
@@ -382,7 +378,6 @@ namespace MecAppIN.ViewModels
                         .Include(o => o.Itens)
                         .First(o => o.Id == _orcamentoId);
 
-                    // Remove itens antigos
                     orcamento.Itens.Clear();
                 }
                 // ===============================
@@ -395,14 +390,31 @@ namespace MecAppIN.ViewModels
                 }
 
                 // ===============================
-                // ATUALIZA CAMPOS
+                // CLIENTE (OPCIONAL)
                 // ===============================
-                orcamento.ClienteId = cliente.Id;
-                orcamento.Veiculo = Veiculo.Trim();
-                orcamento.Placa = Placa.Trim();
+                if (ClienteSelecionado != null && ClienteSelecionado.Id > 0)
+                {
+                    orcamento.ClienteId = ClienteSelecionado.Id;
+                    orcamento.ClienteNome = ClienteSelecionado.Nome;
+                }
+                else
+                {
+                    orcamento.ClienteId = null;
+                    orcamento.ClienteNome = TextoClienteDigitado;
+                }
+
+
+                // ===============================
+                // DADOS DO ORÇAMENTO
+                // ===============================
+                orcamento.Veiculo = Veiculo?.Trim();
+                orcamento.Placa = Placa?.Trim();
                 orcamento.Data = DateTime.Now;
                 orcamento.Total = Itens.Sum(i => i.Quantidade * i.ValorUnitario);
 
+                // ===============================
+                // ITENS
+                // ===============================
                 foreach (var item in Itens)
                 {
                     orcamento.Itens.Add(new ItemOrcamento
@@ -415,7 +427,6 @@ namespace MecAppIN.ViewModels
 
                 db.SaveChanges();
 
-                // Se era novo, agora passa a ser edição
                 _orcamentoId = orcamento.Id;
 
                 MessageBox.Show("Orçamento salvo com sucesso!",
@@ -432,6 +443,7 @@ namespace MecAppIN.ViewModels
                     MessageBoxImage.Error);
             }
         }
+
 
 
         private bool PodeSalvarOrcamento()
@@ -458,11 +470,26 @@ namespace MecAppIN.ViewModels
 
             _orcamentoId = orcamento.Id;
 
-            // Cliente
-            ClienteSelecionado = orcamento.Cliente;
-            TextoClienteDigitado = orcamento.Cliente.Nome;
-            ClienteEndereco = orcamento.Cliente.Endereco;
-            ClienteTelefone = orcamento.Cliente.Telefone;
+            // ===============================
+            // CLIENTE
+            // ===============================
+            if (orcamento.Cliente != null)
+            {
+                // Cliente cadastrado
+                ClienteSelecionado = orcamento.Cliente;
+                TextoClienteDigitado = orcamento.Cliente.Nome;
+                ClienteEndereco = orcamento.Cliente.Endereco;
+                ClienteTelefone = orcamento.Cliente.Telefone;
+            }
+            else
+            {
+                // Cliente não cadastrado
+                ClienteSelecionado = null;
+                TextoClienteDigitado = orcamento.ClienteNome;
+                ClienteEndereco = string.Empty;
+                ClienteTelefone = string.Empty;
+            }
+
 
             // Cabeçalho
             Veiculo = orcamento.Veiculo;

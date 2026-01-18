@@ -2,53 +2,66 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <DockPanel Margin="20">
+        <DockPanel Margin="20">
 
-        <!-- BOTÕES -->
-        <StackPanel DockPanel.Dock="Top"
-                    Orientation="Horizontal"
-                    Margin="0,0,0,10">
+                <!-- BOTÕES -->
+                <StackPanel DockPanel.Dock="Top"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,0,10">
 
-            <Button Content="Editar"
-                    Width="120"
-                    Margin="0,0,10,0"
-                    Command="{Binding EditarCommand}"/>
+                        <Button Content="Editar"
+                                Width="100"
+                                Margin="0,0,10,0"
+                                Command="{Binding EditarCommand}"/>
 
-            <Button Content="Excluir"
-                    Width="120"
-                    Margin="0,0,10,0"
-                    Command="{Binding ExcluirCommand}"/>
+                        <Button Content="Excluir"
+                                Width="100"
+                                Margin="0,0,10,0"
+                                Command="{Binding ExcluirCommand}"/>
 
-            <Button Content="Criar OS"
-                    Width="150"
-                    Margin="0,0,10,0"
-                    Command="{Binding CriarOrdemServicoCommand}"/>
+                        <Button Content="Criar OS"
+                                Width="120"
+                                Margin="0,0,10,0"
+                                Command="{Binding CriarOrdemServicoCommand}"/>
 
-            <Button Content="Imprimir"
-                    Width="150"
-                    Command="{Binding ImprimirCommand}"/>
-        </StackPanel>
+                        <Button Content="Imprimir"
+                                Width="120"
+                                Margin="0,0,20,0"
+                                Command="{Binding ImprimirCommand}"/>
 
-        <!-- GRID -->
-        <DataGrid ItemsSource="{Binding Orcamentos}"
-                  SelectedItem="{Binding OrcamentoSelecionado}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True">
+                        <!-- 🔍 BUSCA -->
+                        <TextBlock Text="Buscar cliente:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,5,0"/>
 
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Data"
-                                    Binding="{Binding Data, StringFormat=dd/MM/yyyy}"/>
+                        <TextBox Width="220"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding TextoBuscaCliente, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
-                <DataGridTextColumn Header="Cliente"
-                                    Binding="{Binding Cliente.Nome}"/>
 
-                <DataGridTextColumn Header="Veículo"
-                                    Binding="{Binding Veiculo}"/>
+                <!-- GRID -->
+                <DataGrid ItemsSource="{Binding Orcamentos}"
+                          SelectedItem="{Binding OrcamentoSelecionado}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True">
 
-                <DataGridTextColumn Header="Total"
-                                    Binding="{Binding Total, StringFormat=C}"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                        <DataGrid.Columns>
+                                <DataGridTextColumn Header="Data"
+                                                    Binding="{Binding Data, StringFormat=dd/MM/yyyy}"/>
 
-    </DockPanel>
+                                <DataGridTextColumn Header="Cliente"
+                                                Binding="{Binding ClienteNome}"/>
+
+
+                                <DataGridTextColumn Header="Veículo"
+                                                    Binding="{Binding Veiculo}"/>
+
+                                <DataGridTextColumn Header="Total"
+                                                    Binding="{Binding Total, StringFormat=C}"/>
+                        </DataGrid.Columns>
+                </DataGrid>
+
+        </DockPanel>
 </UserControl>
