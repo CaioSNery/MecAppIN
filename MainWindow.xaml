@@ -11,16 +11,18 @@
         <DataTemplate DataType="{x:Type vm:ClientesViewModel}">
             <views:ClientesView/>
         </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:OrcamentosViewModel}">
             <views:OrcamentosView/>
         </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:OrdemServicosViewModel}">
             <views:OrdemServicosView/>
         </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:BuscarOrcamentosViewModel}">
             <views:BuscarOrcamentosView/>
         </DataTemplate>
-
     </Window.Resources>
 
     <Grid>
@@ -31,40 +33,60 @@
 
         <!-- MENU LATERAL -->
         <Grid Grid.Column="0"
-              Background="#2D2D30">
+                Background="#2D2D30">
             <Grid.RowDefinitions>
-                <RowDefinition Height="80"/>
-                <!-- Cabeçalho -->
+                <RowDefinition Height="Auto"/>
+                <!-- Cabeçalho + logo -->
                 <RowDefinition Height="*"/>
                 <!-- Botões -->
             </Grid.RowDefinitions>
 
-            <!-- Nome da loja -->
-            <Border Background="#1E1E1E"
-                    Grid.Row="0">
-                <TextBlock Text="B.N.W Retifica e Oficina"
-                           Foreground="White"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"/>
+            <!-- CABEÇALHO -->
+            <Border Grid.Row="0"
+                    Background="#000000"
+                    Padding="10">
+
+                <StackPanel>
+
+                    <!-- Nome da loja -->
+                    <TextBlock Text="B.N.W Retífica e Oficina"
+                               Foreground="White"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               TextAlignment="Center"
+                               Margin="0,10,0,10"
+                               TextWrapping="Wrap"/>
+
+                    <!-- LOGO -->
+                    <Image Source="/Images/bnwLOGO.png"
+                           Width="80"
+                           Height="80"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/>
+
+                </StackPanel>
             </Border>
 
-            <!-- Botões -->
+
+            <!-- BOTÕES -->
             <StackPanel Grid.Row="1"
                         Margin="10">
+
                 <Button Content="Ordem de Serviço"
                         Command="{Binding AbrirOrdemServicoCommand}"
                         Height="45"
                         Margin="0,5"/>
+
                 <Button Content="Orçamentos"
                         Command="{Binding AbrirOrcamentosCommand}"
                         Height="45"
                         Margin="0,5"/>
+
                 <Button Content="Buscar Orçamentos"
                         Command="{Binding AbrirBuscarOrcamentosCommand}"
                         Height="45"
                         Margin="0,5"/>
+
                 <Button Content="Clientes"
                         Command="{Binding AbrirClientesCommand}"
                         Height="45"
