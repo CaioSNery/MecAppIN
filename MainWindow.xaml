@@ -67,7 +67,7 @@
                     <!-- DATA E HORA -->
                     <TextBlock Text="{Binding DataHoraAtual}"
                                Foreground="#B0B0B0"
-                               FontSize="11"
+                               FontSize="13"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
