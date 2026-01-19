@@ -3,6 +3,7 @@ using System;
 using MecAppIN.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MecAppIN.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119151917_OrdemServico")]
+    partial class OrdemServico
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.23");
@@ -46,6 +49,9 @@ namespace MecAppIN.Migrations
                     b.Property<int>("OrcamentoId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("OrdemServicosId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Quantidade")
                         .HasColumnType("INTEGER");
 
@@ -59,32 +65,9 @@ namespace MecAppIN.Migrations
 
                     b.HasIndex("OrcamentoId");
 
+                    b.HasIndex("OrdemServicosId");
+
                     b.ToTable("ItensOrcamento");
-                });
-
-            modelBuilder.Entity("MecAppIN.Models.ItemOrdemServico", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("OrdemServicoId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Quantidade")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Servico")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("ValorUnitario")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrdemServicoId");
-
-                    b.ToTable("ItemOrdemServico");
                 });
 
             modelBuilder.Entity("MecAppIN.Models.Orcamentos", b =>
@@ -118,7 +101,7 @@ namespace MecAppIN.Migrations
                     b.ToTable("Orcamentos");
                 });
 
-            modelBuilder.Entity("OrdemServicos", b =>
+            modelBuilder.Entity("MecAppIN.Models.OrdemServicos", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,13 +116,13 @@ namespace MecAppIN.Migrations
                     b.Property<DateTime>("Data")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("OrcamentoId")
+                    b.Property<int>("OrcamentoId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Placa")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("Total")
+                    b.Property<string>("Valor")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Veiculo")
@@ -160,18 +143,11 @@ namespace MecAppIN.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Orcamento");
-                });
-
-            modelBuilder.Entity("MecAppIN.Models.ItemOrdemServico", b =>
-                {
-                    b.HasOne("OrdemServicos", "OrdemServico")
+                    b.HasOne("MecAppIN.Models.OrdemServicos", null)
                         .WithMany("Itens")
-                        .HasForeignKey("OrdemServicoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OrdemServicosId");
 
-                    b.Navigation("OrdemServico");
+                    b.Navigation("Orcamento");
                 });
 
             modelBuilder.Entity("MecAppIN.Models.Orcamentos", b =>
@@ -183,7 +159,7 @@ namespace MecAppIN.Migrations
                     b.Navigation("Cliente");
                 });
 
-            modelBuilder.Entity("OrdemServicos", b =>
+            modelBuilder.Entity("MecAppIN.Models.OrdemServicos", b =>
                 {
                     b.HasOne("MecAppIN.Models.Clientes", "Cliente")
                         .WithMany()
@@ -197,7 +173,7 @@ namespace MecAppIN.Migrations
                     b.Navigation("Itens");
                 });
 
-            modelBuilder.Entity("OrdemServicos", b =>
+            modelBuilder.Entity("MecAppIN.Models.OrdemServicos", b =>
                 {
                     b.Navigation("Itens");
                 });

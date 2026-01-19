@@ -3,17 +3,21 @@ using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace MecAppIN.ViewModels
 {
-    public class OrcamentosViewModel : INotifyPropertyChanged
+    public class OrcamentosViewModel : ClienteBaseViewModel
     {
         // ===============================
         // CABEÇALHO DO ORÇAMENTO
@@ -44,44 +48,7 @@ namespace MecAppIN.ViewModels
 
         public DateTime DataOrcamento { get; set; } = DateTime.Now;
 
-        // ===============================
-        // CLIENTES
-        // ===============================
-        public ObservableCollection<Clientes> Clientes { get; set; }
-
-        public bool IsSelecionandoCliente { get; set; }
-
-        private Clientes _clienteSelecionado;
-        public Clientes ClienteSelecionado
-        {
-            get => _clienteSelecionado;
-            set
-            {
-                _clienteSelecionado = value;
-                OnPropertyChanged();
-                AtualizarDadosCliente();
-            }
-        }
-
-        private string _textoClienteDigitado;
-        public string TextoClienteDigitado
-        {
-            get => _textoClienteDigitado;
-            set
-            {
-                if (_textoClienteDigitado == value)
-                    return;
-
-                _textoClienteDigitado = value;
-                OnPropertyChanged();
-
-                if (!IsSelecionandoCliente)
-                    BuscarClientes();
-            }
-        }
-
-        public string ClienteEndereco { get; set; }
-        public string ClienteTelefone { get; set; }
+        
 
         // ===============================
         // ITENS DO ORÇAMENTO
@@ -93,6 +60,11 @@ namespace MecAppIN.ViewModels
         // ===============================
         public ICommand GerarExcelCommand { get; }
         public ICommand SalvarOrcamentoCommand { get; }
+        public ICommand ImprimirOrcamentoCommand { get; }
+
+        public ICommand ConverterParaOsCommand { get; }
+
+
 
         // ===============================
         // CONSTRUTOR
@@ -120,6 +92,11 @@ namespace MecAppIN.ViewModels
             );
 
             GerarExcelCommand = new RelayCommand(GerarExcel);
+            ImprimirOrcamentoCommand = new RelayCommand(ImprimirOrcamento);
+
+            ConverterParaOsCommand = new RelayCommand(ConverterParaOrdemServico);
+
+
         }
 
         // ===============================
@@ -172,6 +149,116 @@ namespace MecAppIN.ViewModels
                 });
             }
         }
+
+        private void ImprimirOrcamento()
+        {
+            if (Itens == null || !Itens.Any())
+            {
+                MessageBox.Show("O orçamento não possui itens para impressão.",
+                                "Atenção",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                return;
+            }
+
+            var printDialog = new PrintDialog();
+
+            if (printDialog.ShowDialog() != true)
+                return;
+
+            // ===============================
+            // LAYOUT DE IMPRESSÃO
+            // ===============================
+            var painel = new StackPanel
+            {
+                Margin = new Thickness(30),
+                Width = printDialog.PrintableAreaWidth
+            };
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = "ORÇAMENTO",
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            painel.Children.Add(new TextBlock { Text = $"Cliente: {TextoClienteDigitado}" });
+            painel.Children.Add(new TextBlock { Text = $"Endereço: {ClienteEndereco}" });
+            painel.Children.Add(new TextBlock { Text = $"Telefone: {ClienteTelefone}" });
+            painel.Children.Add(new TextBlock { Text = $"Veículo: {Veiculo}" });
+            painel.Children.Add(new TextBlock { Text = $"Placa: {Placa}" });
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"Data: {DateTime.Now:dd/MM/yyyy}",
+                Margin = new Thickness(0, 0, 0, 15)
+            });
+
+            // Linha separadora
+            painel.Children.Add(new Separator());
+
+            // ===============================
+            // TABELA DE ITENS
+            // ===============================
+            foreach (var item in Itens)
+            {
+                var linha = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = item.Servico,
+                    Width = 250
+                });
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = item.Quantidade.ToString(),
+                    Width = 60
+                });
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = item.ValorUnitario.ToString("C"),
+                    Width = 100
+                });
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = (item.Quantidade * item.ValorUnitario).ToString("C"),
+                    Width = 100
+                });
+
+                painel.Children.Add(linha);
+            }
+
+            painel.Children.Add(new Separator());
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"TOTAL: {Itens.Sum(i => i.Quantidade * i.ValorUnitario):C}",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Right,
+                Margin = new Thickness(0, 10, 0, 0)
+            });
+
+            // Mede e organiza o layout antes de imprimir
+            painel.Measure(new System.Windows.Size(
+    printDialog.PrintableAreaWidth,
+    printDialog.PrintableAreaHeight));
+            painel.Arrange(new Rect(new Point(0, 0), painel.DesiredSize));
+
+            // ===============================
+            // IMPRIMIR
+            // ===============================
+            printDialog.PrintVisual(painel, "Impressão de Orçamento");
+        }
+
 
         private void GerarExcel()
         {
@@ -281,6 +368,9 @@ namespace MecAppIN.ViewModels
                     MessageBoxImage.Error);
             }
         }
+
+
+
 
 
         // ===============================
@@ -508,6 +598,82 @@ namespace MecAppIN.ViewModels
                 });
             }
         }
+
+        private void ConverterParaOrdemServico()
+        {
+            try
+            {
+                if (Itens == null || !Itens.Any())
+                {
+                    MessageBox.Show("O orçamento não possui itens.",
+                                    "Atenção",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Warning);
+                    return;
+                }
+
+                using var db = new AppDbContext();
+
+                var os = new OrdemServicos
+                {
+                    Data = DateTime.Now,
+
+                    // vínculo opcional com orçamento
+                    OrcamentoId = _orcamentoId > 0 ? _orcamentoId : null,
+
+                    // cliente
+                    ClienteID = ClienteSelecionado?.Id,
+                    Cliente = ClienteSelecionado,
+                    ClienteNome = ClienteSelecionado != null
+                        ? ClienteSelecionado.Nome
+                        : TextoClienteDigitado,
+
+                    // veículo
+                    Veiculo = Veiculo,
+                    Placa = Placa,
+
+                    // total
+                    Total = Itens.Sum(i => i.Quantidade * i.ValorUnitario)
+                };
+
+                foreach (var item in Itens)
+                {
+                    os.Itens.Add(new ItemOrdemServico
+                    {
+                        Servico = item.Servico,
+                        Quantidade = item.Quantidade,
+                        ValorUnitario = item.ValorUnitario
+                    });
+                }
+
+                db.OrdemServicos.Add(os);
+                db.SaveChanges();
+
+                MessageBox.Show("Ordem de Serviço criada com sucesso!",
+                                "Sucesso",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+
+                // (opcional) navegar para a tela da OS depois de criar
+                // AbrirTelaOrdemServico(os);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao gerar Ordem de Serviço:\n\n" + ex.Message,
+                                "Erro",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+            }
+        }
+
+
+        private string TotalOrcamentoFormatado()
+        {
+            return Itens.Sum(i => i.Quantidade * i.ValorUnitario).ToString("C");
+        }
+
+
 
 
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace MecAppIN.ViewModels
@@ -125,7 +126,7 @@ namespace MecAppIN.ViewModels
              MessageBoxImage.Warning);
 
             if (OrcamentoSelecionado == null)
-              return;
+                return;
 
             if (resultado != MessageBoxResult.Yes)
                 return;
@@ -150,14 +151,127 @@ namespace MecAppIN.ViewModels
         // ===============================
         private void Imprimir()
         {
-            MessageBox.Show(
-                $"Imprimir orçamento do cliente:\n\n{OrcamentoSelecionado.Cliente.Nome}",
-                "Impressão",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
+            if (OrcamentoSelecionado == null)
+                return;
 
-            // Próximo passo: gerar PDF ou usar PrintDialog
+            if (OrcamentoSelecionado.Itens == null || !OrcamentoSelecionado.Itens.Any())
+            {
+                MessageBox.Show("O orçamento não possui itens para impressão.",
+                                "Atenção",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                return;
+            }
+
+            var printDialog = new PrintDialog();
+
+            if (printDialog.ShowDialog() != true)
+                return;
+
+            // ===============================
+            // LAYOUT DE IMPRESSÃO
+            // ===============================
+            var painel = new StackPanel
+            {
+                Margin = new Thickness(30),
+                Width = printDialog.PrintableAreaWidth
+            };
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = "ORÇAMENTO",
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"Cliente: {OrcamentoSelecionado.NomeClienteExibicao}"
+            });
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"Veículo: {OrcamentoSelecionado.Veiculo}"
+            });
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"Placa: {OrcamentoSelecionado.Placa}"
+            });
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"Data: {OrcamentoSelecionado.Data:dd/MM/yyyy}",
+                Margin = new Thickness(0, 0, 0, 15)
+            });
+
+            painel.Children.Add(new Separator());
+
+            // ===============================
+            // ITENS
+            // ===============================
+            foreach (var item in OrcamentoSelecionado.Itens)
+            {
+                var linha = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = item.Servico,
+                    Width = 260
+                });
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = item.Quantidade.ToString(),
+                    Width = 60
+                });
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = item.ValorUnitario.ToString("C"),
+                    Width = 100
+                });
+
+                linha.Children.Add(new TextBlock
+                {
+                    Text = (item.Quantidade * item.ValorUnitario).ToString("C"),
+                    Width = 100
+                });
+
+                painel.Children.Add(linha);
+            }
+
+            painel.Children.Add(new Separator());
+
+            painel.Children.Add(new TextBlock
+            {
+                Text = $"TOTAL: {OrcamentoSelecionado.Total:C}",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Right,
+                Margin = new Thickness(0, 10, 0, 0)
+            });
+
+            // ===============================
+            // MEDIR / ORGANIZAR
+            // ===============================
+            painel.Measure(new System.Windows.Size(
+                printDialog.PrintableAreaWidth,
+                printDialog.PrintableAreaHeight));
+
+            painel.Arrange(new Rect(new Point(0, 0), painel.DesiredSize));
+
+            // ===============================
+            // IMPRIMIR
+            // ===============================
+            printDialog.PrintVisual(painel, "Impressão de Orçamento");
         }
+
     }
 }

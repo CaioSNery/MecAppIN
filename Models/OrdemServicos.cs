@@ -1,17 +1,26 @@
+using MecAppIN.Models;
 
-
-namespace MecAppIN.Models
+public class OrdemServicos
 {
-   public class OrdemServicos
-{
-    public int Id{get;set;}
+    public int Id { get; set; }
 
-    public DateTime Data{get;set;}=DateTime.Now;
-    public string Descricao{get;set;}=string.Empty;
+    public DateTime Data { get; set; } = DateTime.Now;
 
-    public string Valor{get;set;}=string.Empty;
+    // CLIENTE (opcional)
+    public int? ClienteID { get; set; }
+    public Clientes? Cliente { get; set; }
+    public string ClienteNome { get; set; } = string.Empty;
 
-    public Clientes cliente{get;set;}=null!;
-    public int ClienteID{get;set;}
-}
+    // VEÍCULO
+    public string Veiculo { get; set; } = string.Empty;
+    public string Placa { get; set; } = string.Empty;
+
+    // SERVIÇOS
+    public List<ItemOrdemServico> Itens { get; set; } = new();
+
+    // VALOR FINAL
+    public decimal Total { get; set; }
+
+    // VÍNCULO OPCIONAL
+    public int? OrcamentoId { get; set; }
 }

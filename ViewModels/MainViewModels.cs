@@ -64,7 +64,8 @@ namespace MecAppIN.ViewModels
                 TelaAtual = new BuscarOrcamentosViewModel());
 
             // Tela inicial
-            TelaAtual = new OrdemServicosViewModel();
+            TelaAtual = new OrcamentosViewModel();
+
 
             // ===============================
             // TIMER DE DATA / HORA
