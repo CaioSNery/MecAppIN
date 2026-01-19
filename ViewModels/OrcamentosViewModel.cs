@@ -622,7 +622,7 @@ namespace MecAppIN.ViewModels
                     OrcamentoId = _orcamentoId > 0 ? _orcamentoId : null,
 
                     // cliente
-                    ClienteID = ClienteSelecionado?.Id,
+                    ClienteId = ClienteSelecionado?.Id,
                     Cliente = ClienteSelecionado,
                     ClienteNome = ClienteSelecionado != null
                         ? ClienteSelecionado.Nome

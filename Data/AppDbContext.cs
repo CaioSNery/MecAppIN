@@ -11,6 +11,7 @@ namespace MecAppIN.Data
         public DbSet<Orcamentos> Orcamentos { get; set; }
         public DbSet<ItemOrcamento> ItensOrcamento { get; set; }
 
+        public DbSet<ItemOrdemServico> ItensOrdensServicos { get; set; }
         public DbSet<OrdemServicos> OrdemServicos { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)

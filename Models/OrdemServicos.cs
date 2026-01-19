@@ -4,23 +4,38 @@ public class OrdemServicos
 {
     public int Id { get; set; }
 
+    // ===============================
+    // DATA DA ORDEM
+    // ===============================
     public DateTime Data { get; set; } = DateTime.Now;
 
-    // CLIENTE (opcional)
-    public int? ClienteID { get; set; }
+    // ===============================
+    // CLIENTE (OPCIONAL)
+    // ===============================
+    public int? ClienteId { get; set; }
     public Clientes? Cliente { get; set; }
+
+    // Snapshot do nome (histórico)
     public string ClienteNome { get; set; } = string.Empty;
 
+    // ===============================
     // VEÍCULO
+    // ===============================
     public string Veiculo { get; set; } = string.Empty;
     public string Placa { get; set; } = string.Empty;
 
-    // SERVIÇOS
+    // ===============================
+    // ITENS / SERVIÇOS
+    // ===============================
     public List<ItemOrdemServico> Itens { get; set; } = new();
 
-    // VALOR FINAL
+    // ===============================
+    // TOTAL DA OS
+    // ===============================
     public decimal Total { get; set; }
 
-    // VÍNCULO OPCIONAL
+    // ===============================
+    // VÍNCULO COM ORÇAMENTO (OPCIONAL)
+    // ===============================
     public int? OrcamentoId { get; set; }
 }

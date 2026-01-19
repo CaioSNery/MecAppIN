@@ -12,6 +12,10 @@
             <views:ClientesView/>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:BuscarOrdemServicosViewModel}">
+            <views:BuscarOrdemServicosView/>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:OrcamentosViewModel}">
             <views:OrcamentosView/>
         </DataTemplate>
@@ -20,9 +24,14 @@
             <views:OrdemServicosView/>
         </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:DiaDiaViewModel}">
+                <views:DiaDiaView/>
+            </DataTemplate>
+        
         <DataTemplate DataType="{x:Type vm:BuscarOrcamentosViewModel}">
             <views:BuscarOrcamentosView/>
         </DataTemplate>
+
     </Window.Resources>
 
     <Grid>
@@ -83,6 +92,11 @@
                         Height="45"
                         Margin="0,5"/>
 
+                <Button Content="Buscar Ordem de Serviços"
+                        Command="{Binding AbrirBuscarOrdemServicoCommand}"
+                        Height="45"
+                        Margin="0,5"/>
+
                 <Button Content="Orçamentos"
                         Command="{Binding AbrirOrcamentosCommand}"
                         Height="45"
@@ -95,6 +109,11 @@
 
                 <Button Content="Clientes"
                         Command="{Binding AbrirClientesCommand}"
+                        Height="45"
+                        Margin="0,5"/>
+
+                <Button Content="Dia-a-Dia(Financeiro)"
+                        Command="{Binding AbrirDiaDiaCommand}"
                         Height="45"
                         Margin="0,5"/>
             </StackPanel>

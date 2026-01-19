@@ -28,6 +28,9 @@ namespace MecAppIN.ViewModels
         public ICommand AbrirOrcamentosCommand { get; }
         public ICommand AbrirOrdemServicoCommand { get; }
         public ICommand AbrirBuscarOrcamentosCommand { get; }
+        public ICommand AbrirBuscarOrdemServicoCommand { get; }
+        public ICommand AbrirDiaDiaCommand { get; }
+
 
         // ===============================
         // DATA / HORA
@@ -63,8 +66,15 @@ namespace MecAppIN.ViewModels
             AbrirBuscarOrcamentosCommand = new RelayCommand(() =>
                 TelaAtual = new BuscarOrcamentosViewModel());
 
+            AbrirBuscarOrdemServicoCommand = new RelayCommand(() =>
+                TelaAtual = new BuscarOrdemServicosViewModel());
+
+                AbrirDiaDiaCommand = new RelayCommand(() =>
+                TelaAtual = new DiaDiaViewModel());
+
+
             // Tela inicial
-            TelaAtual = new OrcamentosViewModel();
+            TelaAtual = new OrdemServicosViewModel();
 
 
             // ===============================
