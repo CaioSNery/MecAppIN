@@ -1,16 +1,54 @@
 
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using MecAppIN.Enums;
+
 namespace MecAppIN.Models
 {
-    public class ItemOrdemServico
+public class ItemOrdemServico : INotifyPropertyChanged
 {
     public int Id { get; set; }
 
-    public int OrdemServicoId { get; set; }
-    public OrdemServicos OrdemServico { get; set; }
+    public EBlocoMotor Bloco { get; set; }
 
-    public string Servico { get; set; }
-    public int Quantidade { get; set; }
-    public decimal ValorUnitario { get; set; }
+    private string _servico;
+    public string Servico
+    {
+        get => _servico;
+        set { _servico = value; OnPropertyChanged(); }
+    }
+
+    private int _quantidade;
+    public int Quantidade
+    {
+        get => _quantidade;
+        set
+        {
+            _quantidade = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(Total));
+        }
+    }
+
+    private decimal _valorUnitario;
+    public decimal ValorUnitario
+    {
+        get => _valorUnitario;
+        set
+        {
+            _valorUnitario = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(Total));
+        }
+    }
+
+    public decimal Total => Quantidade * ValorUnitario;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    void OnPropertyChanged([CallerMemberName] string? prop = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
 }
+
+
 
 }

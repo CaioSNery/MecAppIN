@@ -5,6 +5,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="20">
 
+
                         <!-- TÍTULO -->
                         <TextBlock Text="ORDEM DE SERVIÇO"
                                    FontSize="26"
@@ -134,43 +135,254 @@
                                   Margin="0,0,0,20">
                                 <StackPanel Margin="10">
 
-                                        <DataGrid ItemsSource="{Binding Itens}"
-                                                  AutoGenerateColumns="False"
-                                                  CanUserAddRows="True"
-                                                  CanUserDeleteRows="True"
-                                                  Height="250">
+                                        <!-- ================= BIELA ================= -->
+                                        <GroupBox Header="Biela"
+                                                  Margin="0,0,0,10">
+                                                <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
 
-                                                <DataGrid.Columns>
-                                                        <DataGridTextColumn Header="Serviço"
-                                                                            Binding="{Binding Servico}"
-                                                                            Width="*"/>
+                                                        <!-- SERVIÇOS -->
+                                                        <DataGrid Grid.Column="0"
+                                                                  ItemsSource="{Binding ItensBiela}"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Binding="{Binding Quantidade}"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Binding="{Binding Servico}"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Binding="{Binding Total, StringFormat=C}"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
 
-                                                        <DataGridTextColumn Header="Qtde"
-                                                                            Binding="{Binding Quantidade}"
-                                                                            Width="80"/>
+                                                        <!-- PEÇAS (em branco) -->
+                                                        <DataGrid Grid.Column="1"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150"
+                                                                  IsEnabled="False"
+                                                                  Opacity="0.5">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+                                                </Grid>
+                                        </GroupBox>
 
-                                                        <DataGridTextColumn Header="Valor Unit"
-                                                                            Binding="{Binding ValorUnitario, StringFormat=C}"
-                                                                            Width="120"/>
-                                                </DataGrid.Columns>
-                                        </DataGrid>
+                                        <!-- ================= BLOCO ================= -->
+                                        <GroupBox Header="Bloco"
+                                                  Margin="0,0,0,10">
+                                                <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
 
+                                                        <DataGrid Grid.Column="0"
+                                                                  ItemsSource="{Binding ItensBloco}"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Binding="{Binding Quantidade}"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Binding="{Binding Servico}"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Binding="{Binding Total, StringFormat=C}"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+
+                                                        <DataGrid Grid.Column="1"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150"
+                                                                  IsEnabled="False"
+                                                                  Opacity="0.5">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+                                                </Grid>
+                                        </GroupBox>
+
+                                        <!-- ================= CABEÇOTE ================= -->
+                                        <GroupBox Header="Cabeçote"
+                                                  Margin="0,0,0,10">
+                                                <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <DataGrid Grid.Column="0"
+                                                                  ItemsSource="{Binding ItensCabecote}"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Binding="{Binding Quantidade}"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Binding="{Binding Servico}"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Binding="{Binding Total, StringFormat=C}"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+
+                                                        <DataGrid Grid.Column="1"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150"
+                                                                  IsEnabled="False"
+                                                                  Opacity="0.5">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+                                                </Grid>
+                                        </GroupBox>
+
+                                        <!-- ================= EIXO ================= -->
+                                        <GroupBox Header="Eixo"
+                                                  Margin="0,0,0,10">
+                                                <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <DataGrid Grid.Column="0"
+                                                                  ItemsSource="{Binding ItensEixo}"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Binding="{Binding Quantidade}"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Binding="{Binding Servico}"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Binding="{Binding Total, StringFormat=C}"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+
+                                                        <DataGrid Grid.Column="1"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150"
+                                                                  IsEnabled="False"
+                                                                  Opacity="0.5">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+                                                </Grid>
+                                        </GroupBox>
+
+                                        <!-- ================= MOTOR ================= -->
+                                        <GroupBox Header="Motor">
+                                                <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <DataGrid Grid.Column="0"
+                                                                  ItemsSource="{Binding ItensMotor}"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Binding="{Binding Quantidade}"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Binding="{Binding Servico}"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Binding="{Binding Total, StringFormat=C}"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+
+                                                        <DataGrid Grid.Column="1"
+                                                                  AutoGenerateColumns="False"
+                                                                  Height="150"
+                                                                  IsEnabled="False"
+                                                                  Opacity="0.5">
+                                                                <DataGrid.Columns>
+                                                                        <DataGridTextColumn Header="Qtde"
+                                                                                            Width="60"/>
+                                                                        <DataGridTextColumn Header="Descrição"
+                                                                                            Width="*"/>
+                                                                        <DataGridTextColumn Header="Valor"
+                                                                                            Width="80"/>
+                                                                </DataGrid.Columns>
+                                                        </DataGrid>
+                                                </Grid>
+                                        </GroupBox>
 
                                 </StackPanel>
                         </GroupBox>
 
-                        <!-- ========================= -->
-                        <!-- AÇÕES -->
-                        <!-- ========================= -->
-                        <StackPanel Orientation="Horizontal"
-                                    HorizontalAlignment="Right">
 
-                                <Button Content="Imprimir OS"
-                                        Width="200"
-                                        Height="40"
-                                        Command="{Binding ImprimirOsCommand}"/>
+<!-- ========================= -->
+<!-- AÇÕES -->
+<!-- ========================= -->
+<Grid Margin="0,10,0,20">
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
 
-                        </StackPanel>
+    <!-- TOTAL GERAL -->
+    <TextBlock
+        Grid.Column="0"
+        Text="{Binding TotalGeral, StringFormat=TOTAL GERAL: R$ {0:N2}}"
+        FontSize="18"
+        FontWeight="Bold"
+        VerticalAlignment="Center"
+        Margin="0,0,40,0"/>
+
+    <!-- BOTÃO -->
+    <Button
+        Grid.Column="1"
+        Content="Imprimir OS"
+        Width="200"
+        Height="40"
+        VerticalAlignment="Center"
+        Command="{Binding ImprimirOsCommand}"/>
+</Grid>
+
 
                 </StackPanel>
         </ScrollViewer>
