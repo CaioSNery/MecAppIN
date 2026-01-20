@@ -38,7 +38,9 @@
         <DataGrid ItemsSource="{Binding Ordens}"
                   SelectedItem="{Binding OrdemSelecionada}"
                   AutoGenerateColumns="False"
-                  IsReadOnly="True">
+                  IsReadOnly="True"
+                  MouseDoubleClick="DataGrid_MouseDoubleClick">
+
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="OS"

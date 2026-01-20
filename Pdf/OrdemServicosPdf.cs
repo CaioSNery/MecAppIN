@@ -8,8 +8,6 @@ public class OrdemServicoPdf : IDocument
 {
     private readonly OrdemServicos _os;
 
-
-
     public OrdemServicoPdf(OrdemServicos os)
     {
         _os = os;
@@ -21,14 +19,19 @@ public class OrdemServicoPdf : IDocument
     {
         container.Page(page =>
         {
-            page.Margin(20);
             page.Size(PageSizes.A4);
+            page.Margin(15);
 
             page.Header().Element(Cabecalho);
-            page.Content().Element(Conteudo);
+
+            page.Content()
+                .ScaleToFit()
+                .Element(Conteudo);
+
             page.Footer().Element(Rodape);
         });
     }
+
 
     // ===============================
     // CABEÇALHO
@@ -41,8 +44,8 @@ public class OrdemServicoPdf : IDocument
                 .Bold()
                 .FontSize(18);
 
-            col.Item().Text("Rua Lauro de Freitas - São Cristóvão - Salvador/BA");
-            col.Item().Text("Telefone: (71) 9 9999-9999");
+            col.Item().Text("Rua Lauro de Freitas 104 - São Cristóvão - Salvador/BA");
+            col.Item().Text("Telefone: (71)3252-6963/98722-0776");
 
             col.Item().PaddingTop(10).Row(row =>
             {
@@ -59,67 +62,28 @@ public class OrdemServicoPdf : IDocument
     // CONTEÚDO
     // ===============================
     void Conteudo(IContainer container)
-{
-    container.PaddingTop(10).Column(col =>
     {
-        col.Item().Text($"Cliente: {_os.ClienteNome}");
-        col.Item().Text($"Veículo: {_os.Veiculo}    Placa: {_os.Placa}");
+        container.PaddingTop(10).Column(col =>
+        {
+            col.Item().Text($"Cliente: {_os.ClienteNome}");
+            col.Item().Text($"Veículo: {_os.Veiculo}    Placa: {_os.Placa}");
 
-        ImprimirBloco(col, EBlocoMotor.Biela, "BIELA");
-        ImprimirBloco(col, EBlocoMotor.Bloco, "BLOCO");
-        ImprimirBloco(col, EBlocoMotor.Cabecote, "CABEÇOTE");
-        ImprimirBloco(col, EBlocoMotor.Eixo, "EIXO");
-        ImprimirBloco(col, EBlocoMotor.Motor, "MOTOR");
-    });
-}
+            ImprimirBloco(col, EBlocoMotor.Biela, "BIELA");
+            ImprimirBloco(col, EBlocoMotor.Bloco, "BLOCO");
+            ImprimirBloco(col, EBlocoMotor.Cabecote, "CABEÇOTE");
+            ImprimirBloco(col, EBlocoMotor.Eixo, "EIXO");
+            ImprimirBloco(col, EBlocoMotor.Motor, "MOTOR");
+        });
+    }
 
-void ImprimirBloco(ColumnDescriptor col, EBlocoMotor bloco, string titulo)
-{
-    var itens = _os.Itens
-        .Where(i => i.Bloco == bloco)
-        .ToList();
-
-    BlocoMotorPdf(col.Item(), titulo, itens);
-}
-
-void TabelaPadrao(IContainer container, List<ItemOrdemServico> itens)
-{
-    const int linhasTela = 6;
-
-    container.Table(table =>
+    void ImprimirBloco(ColumnDescriptor col, EBlocoMotor bloco, string titulo)
     {
-        table.ColumnsDefinition(c =>
-        {
-            c.ConstantColumn(40);
-            c.RelativeColumn();
-            c.ConstantColumn(70);
-        });
+        var itens = _os.Itens
+            .Where(i => i.Bloco == bloco)
+            .ToList();
 
-        table.Header(h =>
-        {
-            h.Cell().Text("Qtde").Bold();
-            h.Cell().Text("Serviço").Bold();
-            h.Cell().Text("Valor").Bold();
-        });
-
-        int usadas = 0;
-
-        foreach (var item in itens)
-        {
-            table.Cell().Text(item.Quantidade.ToString());
-            table.Cell().Text(item.Servico);
-            table.Cell().AlignRight().Text(item.Total.ToString("C"));
-            usadas++;
-        }
-
-        for (int i = usadas; i < linhasTela; i++)
-        {
-            table.Cell().Height(18);
-            table.Cell();
-            table.Cell();
-        }
-    });
-}
+        BlocoMotorPdf(col.Item(), titulo, itens);
+    }
 
 
 
@@ -132,7 +96,7 @@ void TabelaPadrao(IContainer container, List<ItemOrdemServico> itens)
    .Padding(5)
    .Text(titulo)
    .Bold()
-   .FontSize(12);
+   .FontSize(11);
 
 
             col.Item().Row(row =>
@@ -148,108 +112,60 @@ void TabelaPadrao(IContainer container, List<ItemOrdemServico> itens)
 
     void TabelaPadrao(IContainer container, string titulo, List<ItemOrdemServico> itens)
     {
+        const int linhasFixas = 4; 
+
         container.Table(table =>
         {
             table.ColumnsDefinition(c =>
             {
-                c.ConstantColumn(40);
-                c.RelativeColumn();
-                c.ConstantColumn(60);
+                c.ConstantColumn(40);   
+                c.RelativeColumn();     
+                c.ConstantColumn(60);   
             });
 
+            // ===============================
+            // CABEÇALHO
+            // ===============================
             table.Header(h =>
             {
                 h.Cell().ColumnSpan(3)
+                    .BorderBottom(1)
                     .Text(titulo)
                     .Bold()
                     .AlignCenter();
 
                 h.Cell().Text("Qtde").Bold();
                 h.Cell().Text("Descrição").Bold();
-                h.Cell().Text("Valor").Bold();
+                h.Cell().AlignRight().Text("Valor").Bold();
             });
 
-            if (!itens.Any())
-            {
-                // linhas em branco (igual OS de papel)
-                for (int i = 0; i < 5; i++)
-                {
-                    table.Cell().Height(18);
-                    table.Cell();
-                    table.Cell();
-                }
-            }
-            else
-            {
-                foreach (var item in itens)
-                {
-                    table.Cell().Text(item.Quantidade.ToString());
-                    table.Cell().Text(item.Servico);
-                    table.Cell().Text(item.Total.ToString("C"));
-                }
-            }
-        });
-    }
+            int linhasUsadas = 0;
 
-
-
-
-    // ===============================
-    // TABELA SERVIÇOS
-    // ===============================
-    void TabelaServicos(IContainer container)
-    {
-        container.Table(table =>
-        {
-            table.ColumnsDefinition(columns =>
-            {
-                columns.ConstantColumn(40);   // Qtde
-                columns.RelativeColumn();     // Descrição
-                columns.ConstantColumn(60);   // Valor
-            });
-
-            table.Header(h =>
-            {
-                h.Cell().Text("Qtde").Bold();
-                h.Cell().Text("Serviço").Bold();
-                h.Cell().Text("Valor").Bold();
-            });
-
-            foreach (var item in _os.Itens)
+            // ===============================
+            // ITENS REAIS
+            // ===============================
+            foreach (var item in itens.Take(linhasFixas))
             {
                 table.Cell().Text(item.Quantidade.ToString());
                 table.Cell().Text(item.Servico);
-                table.Cell().Text(
-                    (item.Quantidade * item.ValorUnitario).ToString("C")
-                );
+                table.Cell().AlignRight().Text(item.Total.ToString("C"));
+
+                linhasUsadas++;
+            }
+
+            // ===============================
+            // LINHAS EM BRANCO (até completar 4)
+            // ===============================
+            for (int i = linhasUsadas; i < linhasFixas; i++)
+            {
+                table.Cell().Height(18);
+                table.Cell();
+                table.Cell();
             }
         });
     }
 
-    // ===============================
-    // TABELA PEÇAS (FUTURO)
-    // ===============================
-    void TabelaPecas(IContainer container)
-    {
-        container.Table(table =>
-        {
-            table.ColumnsDefinition(columns =>
-            {
-                columns.ConstantColumn(40);
-                columns.RelativeColumn();
-                columns.ConstantColumn(60);
-            });
 
-            table.Header(h =>
-            {
-                h.Cell().Text("Qtde").Bold();
-                h.Cell().Text("Peça").Bold();
-                h.Cell().Text("Valor").Bold();
-            });
-
-            // vazio por enquanto
-        });
-    }
 
     // ===============================
     // RODAPÉ / ASSINATURA

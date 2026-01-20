@@ -152,9 +152,9 @@ namespace MecAppIN.ViewModels
                 ValorUnitario = 0 // editável
             });
 
-            // 2 linhas em branco
-            ItensBiela.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Biela });
-            ItensBiela.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Biela });
+            // // 2 linhas em branco
+            // ItensBiela.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Biela });
+            // ItensBiela.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Biela });
         }
 
         private void CarregarItensBloco()
@@ -201,11 +201,11 @@ namespace MecAppIN.ViewModels
                 ValorUnitario = 400
             });
 
-            // 4 linhas em branco
-            ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
-            ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
-            ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
-            ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
+            // // 4 linhas em branco
+            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
+            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
+            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
+            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
         }
 
         public void CarregarItensCabecote()
@@ -285,11 +285,11 @@ namespace MecAppIN.ViewModels
             });
 
 
-            ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
+            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
+            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
+            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
+            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
+            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
 
         }
 
@@ -329,8 +329,8 @@ namespace MecAppIN.ViewModels
                 ValorUnitario = 180
             });
 
-            ItensEixo.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Eixo });
-            ItensEixo.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Eixo });
+            // ItensEixo.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Eixo });
+            // ItensEixo.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Eixo });
 
         }
 
@@ -371,8 +371,8 @@ namespace MecAppIN.ViewModels
                 ValorUnitario = 0
             });
 
-            ItensMotor.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Motor });
-            ItensMotor.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Motor });
+            // ItensMotor.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Motor });
+            // ItensMotor.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Motor });
         }
 
 
@@ -412,34 +412,7 @@ namespace MecAppIN.ViewModels
             }
         }
 
-        private void SalvarOrdemServico()
-        {
-            using var context = new AppDbContext();
-
-            var ordem = new OrdemServicos
-            {
-                Data = DateTime.Now,
-                ClienteId = ClienteSelecionado?.Id,
-                ClienteNome = TextoClienteDigitado,
-                Veiculo = Veiculo,
-                Placa = Placa,
-                Total = Itens.Sum(i => i.Quantidade * i.ValorUnitario)
-            };
-
-            foreach (var item in Itens)
-            {
-                ordem.Itens.Add(new ItemOrdemServico
-                {
-                    Servico = item.Servico,
-                    Quantidade = item.Quantidade,
-                    ValorUnitario = item.ValorUnitario
-                });
-            }
-
-            context.OrdemServicos.Add(ordem);
-            context.SaveChanges();
-        }
-
+       
         private List<ItemOrdemServico> ObterTodosItens()
         {
             return ItensBiela
@@ -556,23 +529,6 @@ namespace MecAppIN.ViewModels
 
 
 
-        private void GerarPdf(OrdemServicos os)
-        {
-            var pdf = new OrdemServicoPdf(os);
-
-            var caminho = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                $"OS_{os.Id}.pdf"
-            );
-
-            pdf.GeneratePdf(caminho);
-
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = caminho,
-                UseShellExecute = true
-            });
-        }
 
         private string GerarPdfInterno(OrdemServicos os)
         {
