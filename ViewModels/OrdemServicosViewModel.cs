@@ -6,9 +6,11 @@ using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Packaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Xps.Packaging;
 
 namespace MecAppIN.ViewModels
 {
@@ -479,8 +481,10 @@ namespace MecAppIN.ViewModels
                     return;
                 }
 
+                // 1️⃣ Clonar itens
                 var itensBanco = ClonarItensParaPersistencia(itensTela);
 
+                // 2️⃣ Criar OS
                 var os = new OrdemServicos
                 {
                     Data = DateTime.Now,
@@ -488,41 +492,112 @@ namespace MecAppIN.ViewModels
                     ClienteNome = TextoClienteDigitado,
                     Veiculo = Veiculo,
                     Placa = Placa,
-                    Itens = itensBanco,
-                    Total = itensBanco.Sum(i => i.Total)
+                    Total = TotalGeral,
+                    Itens = itensBanco
                 };
 
+                // 3️⃣ Salvar no banco
                 using (var db = new AppDbContext())
                 {
                     db.OrdemServicos.Add(os);
                     db.SaveChanges();
                 }
 
-                var pdf = new OrdemServicoPdf(os);
+                // 4️⃣ Gerar PDF interno (SEM abrir)
+                GerarPdfInterno(os);
 
-                var caminho = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    $"OS_{os.Id}.pdf"
-                );
-
-                pdf.GeneratePdf(caminho);
-
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = caminho,
-                    UseShellExecute = true
-                });
+                // 5️⃣ Abrir PrintDialog
+                ImprimirOsComDialogo(os);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Erro ao gerar OS:\n{ex.Message}",
+                    $"Erro ao imprimir OS:\n{ex.Message}",
                     "Erro",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
                 );
             }
         }
+
+
+
+        private void ImprimirOsComDialogo(OrdemServicos os)
+        {
+            var printDialog = new PrintDialog();
+
+            if (printDialog.ShowDialog() != true)
+                return;
+
+            var tempXps = Path.Combine(
+                Path.GetTempPath(),
+                $"OS_{os.Id}.xps"
+            );
+
+            try
+            {
+                var pdf = new OrdemServicoPdf(os);
+                pdf.GenerateXps(tempXps);
+
+                using var xpsDoc = new XpsDocument(tempXps, FileAccess.Read);
+                var paginator = xpsDoc.GetFixedDocumentSequence().DocumentPaginator;
+
+                printDialog.PrintDocument(
+                    paginator,
+                    $"Ordem de Serviço #{os.Id}"
+                );
+            }
+            finally
+            {
+                if (File.Exists(tempXps))
+                    File.Delete(tempXps);
+            }
+        }
+
+
+
+        private void GerarPdf(OrdemServicos os)
+        {
+            var pdf = new OrdemServicoPdf(os);
+
+            var caminho = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                $"OS_{os.Id}.pdf"
+            );
+
+            pdf.GeneratePdf(caminho);
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = caminho,
+                UseShellExecute = true
+            });
+        }
+
+        private string GerarPdfInterno(OrdemServicos os)
+        {
+            var basePath = Path.Combine(
+                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
+                "PDFs",
+                "OrdensDeServico",
+                DateTime.Now.Year.ToString(),
+                DateTime.Now.Month.ToString("D2")
+            );
+
+            Directory.CreateDirectory(basePath);
+
+            var caminhoPdf = Path.Combine(
+                basePath,
+                $"OS_{os.Id}.pdf"
+            );
+
+            var pdf = new OrdemServicoPdf(os);
+            pdf.GeneratePdf(caminhoPdf);
+
+            return caminhoPdf;
+        }
+
+
 
 
 

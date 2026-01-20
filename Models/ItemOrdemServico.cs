@@ -1,13 +1,14 @@
-
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MecAppIN.Enums;
 
-namespace MecAppIN.Models
-{
 public class ItemOrdemServico : INotifyPropertyChanged
 {
     public int Id { get; set; }
+
+    
+    public int OrdemServicosId { get; set; }
+    public OrdemServicos OrdemServicos { get; set; }
 
     public EBlocoMotor Bloco { get; set; }
 
@@ -47,8 +48,4 @@ public class ItemOrdemServico : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string? prop = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-}
-
-
-
 }

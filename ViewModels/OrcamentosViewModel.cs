@@ -249,8 +249,8 @@ namespace MecAppIN.ViewModels
 
             // Mede e organiza o layout antes de imprimir
             painel.Measure(new System.Windows.Size(
-    printDialog.PrintableAreaWidth,
-    printDialog.PrintableAreaHeight));
+            printDialog.PrintableAreaWidth,
+            printDialog.PrintableAreaHeight));
             painel.Arrange(new Rect(new Point(0, 0), painel.DesiredSize));
 
             // ===============================
@@ -370,45 +370,6 @@ namespace MecAppIN.ViewModels
         }
 
 
-
-
-
-        // ===============================
-        // BUSCAR CLIENTES
-        // ===============================
-        private void BuscarClientes()
-        {
-            using var db = new AppDbContext();
-
-            Clientes.Clear();
-
-            if (string.IsNullOrWhiteSpace(TextoClienteDigitado))
-                return;
-
-            var termo = TextoClienteDigitado.Trim();
-
-            var lista = db.Clientes
-                .Where(c => EF.Functions.Like(c.Nome, $"%{termo}%"))
-                .OrderBy(c => c.Nome)
-                .Take(20)
-                .ToList();
-
-            foreach (var c in lista)
-                Clientes.Add(c);
-        }
-
-        private void AtualizarDadosCliente()
-        {
-            if (ClienteSelecionado == null)
-                return;
-
-            TextoClienteDigitado = ClienteSelecionado.Nome;
-            ClienteEndereco = ClienteSelecionado.Endereco;
-            ClienteTelefone = ClienteSelecionado.Telefone;
-
-            OnPropertyChanged(nameof(ClienteEndereco));
-            OnPropertyChanged(nameof(ClienteTelefone));
-        }
 
         // ===============================
         // CLIENTE
@@ -668,12 +629,7 @@ namespace MecAppIN.ViewModels
         }
 
 
-        private string TotalOrcamentoFormatado()
-        {
-            return Itens.Sum(i => i.Quantidade * i.ValorUnitario).ToString("C");
-        }
-
-
+    
 
 
 

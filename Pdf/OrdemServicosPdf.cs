@@ -59,43 +59,69 @@ public class OrdemServicoPdf : IDocument
     // CONTEÚDO
     // ===============================
     void Conteudo(IContainer container)
+{
+    container.PaddingTop(10).Column(col =>
     {
-        container.PaddingTop(10).Column(col =>
+        col.Item().Text($"Cliente: {_os.ClienteNome}");
+        col.Item().Text($"Veículo: {_os.Veiculo}    Placa: {_os.Placa}");
+
+        ImprimirBloco(col, EBlocoMotor.Biela, "BIELA");
+        ImprimirBloco(col, EBlocoMotor.Bloco, "BLOCO");
+        ImprimirBloco(col, EBlocoMotor.Cabecote, "CABEÇOTE");
+        ImprimirBloco(col, EBlocoMotor.Eixo, "EIXO");
+        ImprimirBloco(col, EBlocoMotor.Motor, "MOTOR");
+    });
+}
+
+void ImprimirBloco(ColumnDescriptor col, EBlocoMotor bloco, string titulo)
+{
+    var itens = _os.Itens
+        .Where(i => i.Bloco == bloco)
+        .ToList();
+
+    BlocoMotorPdf(col.Item(), titulo, itens);
+}
+
+void TabelaPadrao(IContainer container, List<ItemOrdemServico> itens)
+{
+    const int linhasTela = 6;
+
+    container.Table(table =>
+    {
+        table.ColumnsDefinition(c =>
         {
-            col.Item().Text($"Cliente: {_os.ClienteNome}");
-            col.Item().Text($"Veículo: {_os.Veiculo}    Placa: {_os.Placa}");
-
-            BlocoMotorPdf(
-                col.Item(),
-                "BIELA",
-                _os.Itens.Where(i => i.Bloco == EBlocoMotor.Biela).ToList()
-            );
-
-            BlocoMotorPdf(
-                col.Item(),
-                "BLOCO",
-                _os.Itens.Where(i => i.Bloco == EBlocoMotor.Bloco).ToList()
-            );
-
-            BlocoMotorPdf(
-                col.Item(),
-                "CABEÇOTE",
-                _os.Itens.Where(i => i.Bloco == EBlocoMotor.Cabecote).ToList()
-            );
-
-            BlocoMotorPdf(
-                col.Item(),
-                "EIXO",
-                _os.Itens.Where(i => i.Bloco == EBlocoMotor.Eixo).ToList()
-            );
-
-            BlocoMotorPdf(
-                col.Item(),
-                "MOTOR",
-                _os.Itens.Where(i => i.Bloco == EBlocoMotor.Motor).ToList()
-            );
+            c.ConstantColumn(40);
+            c.RelativeColumn();
+            c.ConstantColumn(70);
         });
-    }
+
+        table.Header(h =>
+        {
+            h.Cell().Text("Qtde").Bold();
+            h.Cell().Text("Serviço").Bold();
+            h.Cell().Text("Valor").Bold();
+        });
+
+        int usadas = 0;
+
+        foreach (var item in itens)
+        {
+            table.Cell().Text(item.Quantidade.ToString());
+            table.Cell().Text(item.Servico);
+            table.Cell().AlignRight().Text(item.Total.ToString("C"));
+            usadas++;
+        }
+
+        for (int i = usadas; i < linhasTela; i++)
+        {
+            table.Cell().Height(18);
+            table.Cell();
+            table.Cell();
+        }
+    });
+}
+
+
 
     void BlocoMotorPdf(IContainer container, string titulo, List<ItemOrdemServico> itens)
     {

@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
 using System.Data;
 using System.Windows;
+using QuestPDF.Infrastructure;
 
 namespace MecAppIN;
 
@@ -9,5 +10,9 @@ namespace MecAppIN;
 /// </summary>
 public partial class App : Application
 {
+    public App()
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+    }
 }
 

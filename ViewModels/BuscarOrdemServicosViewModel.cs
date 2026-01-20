@@ -2,11 +2,15 @@ using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Xps.Packaging;
 
 namespace MecAppIN.ViewModels
 {
@@ -105,34 +109,113 @@ namespace MecAppIN.ViewModels
                 return;
 
             var resultado = MessageBox.Show(
-                $"Deseja excluir a OS #{OrdemSelecionada.Id} do cliente \"{OrdemSelecionada.ClienteNome}\"?",
+                $"Deseja excluir a OS #{OrdemSelecionada.Id} do cliente \"{OrdemSelecionada.ClienteNome}\"?\n\n" +
+                "Esta ação também removerá o PDF salvo.",
                 "Confirmação",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                MessageBoxImage.Warning
+            );
 
             if (resultado != MessageBoxResult.Yes)
                 return;
 
-            using var db = new AppDbContext();
-            db.OrdemServicos.Remove(OrdemSelecionada);
-            db.SaveChanges();
+            try
+            {
+                
+                var caminhoPdf = ObterCaminhoPdf(OrdemSelecionada);
 
-            Ordens.Remove(OrdemSelecionada);
+                if (File.Exists(caminhoPdf))
+                {
+                    File.Delete(caminhoPdf);
+                }
+
+                
+                using var db = new AppDbContext();
+                db.OrdemServicos.Remove(OrdemSelecionada);
+                db.SaveChanges();
+
+                
+                Ordens.Remove(OrdemSelecionada);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erro ao excluir a Ordem de Serviço:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
         }
+
 
         // ===============================
         // REIMPRIMIR
         // ===============================
+
+        private string ObterCaminhoPdf(OrdemServicos os)
+        {
+            return Path.Combine(
+                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
+                "PDFs",
+                "OrdensDeServico",
+                os.Data.Year.ToString(),
+                os.Data.Month.ToString("D2"),
+                $"OS_{os.Id}.pdf"
+            );
+        }
+
         private void Reimprimir()
         {
             if (OrdemSelecionada == null)
                 return;
 
-            MessageBox.Show(
-                $"Reimprimir OS #{OrdemSelecionada.Id} (próximo passo)",
-                "Reimpressão",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            var caminhoPdf = ObterCaminhoPdf(OrdemSelecionada);
+
+            if (!File.Exists(caminhoPdf))
+            {
+                MessageBox.Show(
+                    "O arquivo PDF desta OS não foi encontrado.\n" +
+                    "Possivelmente ele foi removido ou movido.",
+                    "PDF não encontrado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            var printDialog = new PrintDialog();
+
+            if (printDialog.ShowDialog() != true)
+                return;
+
+            
+            var tempXps = Path.Combine(
+                Path.GetTempPath(),
+                $"OS_{OrdemSelecionada.Id}.xps"
+            );
+
+            try
+            {
+                
+                var pdf = new OrdemServicoPdf(OrdemSelecionada);
+                pdf.GenerateXps(tempXps);
+
+                using var xpsDoc = new XpsDocument(tempXps, FileAccess.Read);
+                var paginator =
+                    xpsDoc.GetFixedDocumentSequence().DocumentPaginator;
+
+                printDialog.PrintDocument(
+                    paginator,
+                    $"Reimpressão OS #{OrdemSelecionada.Id}"
+                );
+            }
+            finally
+            {
+                if (File.Exists(tempXps))
+                    File.Delete(tempXps);
+            }
         }
+
     }
 }
