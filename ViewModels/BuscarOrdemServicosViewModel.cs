@@ -1,6 +1,8 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
+using MecAppIN.Services;
+using MecAppIN.Views;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.Generic;
@@ -45,14 +47,21 @@ namespace MecAppIN.ViewModels
         // COMMANDS
         public ICommand ReimprimirCommand { get; }
         public ICommand ExcluirCommand { get; }
+        public ICommand EditarCommand { get; }
 
-        public BuscarOrdemServicosViewModel()
+
+        private readonly MainViewModel _mainVm;
+
+        public BuscarOrdemServicosViewModel(MainViewModel mainVm)
         {
+            _mainVm = mainVm;
+
             Ordens = new ObservableCollection<OrdemServicos>();
             Carregar();
 
             ReimprimirCommand = new RelayCommand(Reimprimir, PodeExecutar);
             ExcluirCommand = new RelayCommand(Excluir, PodeExecutar);
+            EditarCommand = new RelayCommand(Editar, PodeExecutar);
         }
 
         private bool PodeExecutar()
@@ -64,6 +73,7 @@ namespace MecAppIN.ViewModels
         {
             (ReimprimirCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (ExcluirCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (EditarCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
 
         // ===============================
@@ -92,13 +102,17 @@ namespace MecAppIN.ViewModels
 
             var filtradas = string.IsNullOrWhiteSpace(termo)
                 ? _todasOrdens
-                : _todasOrdens
-                    .Where(o => o.ClienteNome.ToLower().Contains(termo))
-                    .ToList();
+                : _todasOrdens.Where(o =>
+                    o.ClienteNome.ToLower().Contains(termo) ||
+                    o.Veiculo.ToLower().Contains(termo) ||
+                    o.Placa.ToLower().Contains(termo) ||
+                    o.Id.ToString().Contains(termo)
+                ).ToList();
 
             foreach (var os in filtradas)
                 Ordens.Add(os);
         }
+
 
         // ===============================
         // EXCLUIR
@@ -121,7 +135,7 @@ namespace MecAppIN.ViewModels
 
             try
             {
-                
+
                 var caminhoPdf = ObterCaminhoPdf(OrdemSelecionada);
 
                 if (File.Exists(caminhoPdf))
@@ -129,12 +143,12 @@ namespace MecAppIN.ViewModels
                     File.Delete(caminhoPdf);
                 }
 
-                
+
                 using var db = new AppDbContext();
                 db.OrdemServicos.Remove(OrdemSelecionada);
                 db.SaveChanges();
 
-                
+
                 Ordens.Remove(OrdemSelecionada);
             }
             catch (Exception ex)
@@ -147,6 +161,16 @@ namespace MecAppIN.ViewModels
                 );
             }
         }
+
+
+        private void Editar()
+        {
+            if (OrdemSelecionada == null)
+                return;
+
+            _mainVm.TelaAtual = new OrdemServicosViewModel(OrdemSelecionada.Id);
+        }
+
 
 
         // ===============================
@@ -189,7 +213,7 @@ namespace MecAppIN.ViewModels
             if (printDialog.ShowDialog() != true)
                 return;
 
-            
+
             var tempXps = Path.Combine(
                 Path.GetTempPath(),
                 $"OS_{OrdemSelecionada.Id}.xps"
@@ -197,7 +221,7 @@ namespace MecAppIN.ViewModels
 
             try
             {
-                
+
                 var pdf = new OrdemServicoPdf(OrdemSelecionada);
                 pdf.GenerateXps(tempXps);
 

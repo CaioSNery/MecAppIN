@@ -21,6 +21,12 @@
                     Width="100"
                     Margin="0,0,20,0"
                     Command="{Binding ExcluirCommand}"/>
+                    
+            <Button Content="Editar"
+                    Width="100"
+                    Margin="0,0,10,0"
+                    Command="{Binding EditarCommand}"/>
+
 
             <!-- 🔍 BUSCA -->
             <TextBlock Text="Buscar cliente:"

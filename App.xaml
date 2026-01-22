@@ -6,6 +6,9 @@
 
     <Application.Resources>
         <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Application.Resources>
+
+    
 
 </Application>

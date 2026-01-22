@@ -11,7 +11,7 @@ namespace MecAppIN.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         // ===============================
-        // NAVEGAÇÃO DE TELAS
+        // NAVEGAÇÃO
         // ===============================
         private object _telaAtual;
         public object TelaAtual
@@ -31,7 +31,6 @@ namespace MecAppIN.ViewModels
         public ICommand AbrirBuscarOrdemServicoCommand { get; }
         public ICommand AbrirDiaDiaCommand { get; }
 
-
         // ===============================
         // DATA / HORA
         // ===============================
@@ -49,11 +48,10 @@ namespace MecAppIN.ViewModels
         private readonly DispatcherTimer _timer;
 
         // ===============================
-        // CONSTRUTOR ÚNICO
+        // CONSTRUTOR
         // ===============================
         public MainViewModel()
         {
-            // Commands de navegação
             AbrirClientesCommand = new RelayCommand(() =>
                 TelaAtual = new ClientesViewModel());
 
@@ -66,20 +64,16 @@ namespace MecAppIN.ViewModels
             AbrirBuscarOrcamentosCommand = new RelayCommand(() =>
                 TelaAtual = new BuscarOrcamentosViewModel());
 
+            
             AbrirBuscarOrdemServicoCommand = new RelayCommand(() =>
-                TelaAtual = new BuscarOrdemServicosViewModel());
+                TelaAtual = new BuscarOrdemServicosViewModel(this));
 
-                AbrirDiaDiaCommand = new RelayCommand(() =>
+            AbrirDiaDiaCommand = new RelayCommand(() =>
                 TelaAtual = new DiaDiaViewModel());
-
 
             // Tela inicial
             TelaAtual = new OrdemServicosViewModel();
 
-
-            // ===============================
-            // TIMER DE DATA / HORA
-            // ===============================
             AtualizarHora();
 
             _timer = new DispatcherTimer
@@ -92,7 +86,7 @@ namespace MecAppIN.ViewModels
         }
 
         // ===============================
-        // EDIÇÃO DE ORÇAMENTO
+        // MÉTODOS AUXILIARES
         // ===============================
         public void AbrirEdicaoOrcamento(Orcamentos orcamento)
         {
@@ -104,11 +98,9 @@ namespace MecAppIN.ViewModels
             DataHoraAtual = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
         }
 
-        // ===============================
-        // INotifyPropertyChanged
-        // ===============================
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string prop = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
+
 }

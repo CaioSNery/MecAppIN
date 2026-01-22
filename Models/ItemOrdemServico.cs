@@ -6,7 +6,11 @@ public class ItemOrdemServico : INotifyPropertyChanged
 {
     public int Id { get; set; }
 
-    
+    public bool IsPeca { get; set; }
+
+    public bool ValorEditavel { get; set; }
+
+
     public int OrdemServicosId { get; set; }
     public OrdemServicos OrdemServicos { get; set; }
 

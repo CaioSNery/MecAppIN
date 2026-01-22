@@ -3,6 +3,7 @@ using System;
 using MecAppIN.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MecAppIN.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260122135152_PecasBool")]
+    partial class PecasBool
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.23");
@@ -37,9 +40,6 @@ namespace MecAppIN.Migrations
 
                     b.Property<string>("Servico")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("ValorEditavel")
-                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("ValorUnitario")
                         .HasColumnType("TEXT");
