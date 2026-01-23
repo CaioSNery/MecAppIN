@@ -1,12 +1,17 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
+using MecAppIN.Pdf;
+using MecAppIN.Services;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Xps.Packaging;
 
 namespace MecAppIN.ViewModels
 {
@@ -35,15 +40,16 @@ namespace MecAppIN.ViewModels
                 Filtrar();
             }
         }
+
         private List<Orcamentos> _todosOrcamentos;
-
-
 
         // COMMANDS
         public ICommand EditarCommand { get; }
         public ICommand ExcluirCommand { get; }
         public ICommand CriarOrdemServicoCommand { get; }
+        public ICommand AbrirPdfCommand { get; }
         public ICommand ImprimirCommand { get; }
+
 
         public BuscarOrcamentosViewModel()
         {
@@ -53,7 +59,8 @@ namespace MecAppIN.ViewModels
             EditarCommand = new RelayCommand(Editar, PodeExecutar);
             ExcluirCommand = new RelayCommand(Excluir, PodeExecutar);
             CriarOrdemServicoCommand = new RelayCommand(CriarOrdemServico, PodeExecutar);
-            ImprimirCommand = new RelayCommand(Imprimir, PodeExecutar);
+            AbrirPdfCommand = new RelayCommand(AbrirPdf, PodeExecutar);
+            ImprimirCommand = new RelayCommand(ImprimirOrcamento, PodeExecutar);
         }
 
         private bool PodeExecutar()
@@ -66,21 +73,28 @@ namespace MecAppIN.ViewModels
             (EditarCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (ExcluirCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (CriarOrdemServicoCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (AbrirPdfCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (ImprimirCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
 
+        // ===============================
+        // CARREGAR
+        // ===============================
         private void Carregar()
         {
             using var db = new AppDbContext();
 
             _todosOrcamentos = db.Orcamentos
-                .Include(o => o.Cliente)
                 .Include(o => o.Itens)
                 .OrderByDescending(o => o.Data)
                 .ToList();
 
             Filtrar();
         }
+
+        // ===============================
+        // FILTRO
+        // ===============================
         private void Filtrar()
         {
             Orcamentos.Clear();
@@ -89,29 +103,35 @@ namespace MecAppIN.ViewModels
 
             var filtrados = string.IsNullOrWhiteSpace(termo)
                 ? _todosOrcamentos
-                : _todosOrcamentos
-                    .Where(o => o.ClienteNome.ToLower().Contains(termo))
-                    .ToList();
+                : _todosOrcamentos.Where(o =>
+                    o.ClienteNome.ToLower().Contains(termo) ||
+                    o.Veiculo.ToLower().Contains(termo) ||
+                    o.Placa.ToLower().Contains(termo) ||
+                    o.Id.ToString().Contains(termo)
+                ).ToList();
 
             foreach (var o in filtrados)
                 Orcamentos.Add(o);
         }
 
-
-
         // ===============================
-        // EDITAR
+        // EDITAR ORÇAMENTO
         // ===============================
         private void Editar()
         {
-            // Acessa o MainViewModel atual
-            var mainVM = Application.Current.MainWindow.DataContext as MainViewModel;
+            if (OrcamentoSelecionado == null)
+                return;
 
+            var mainVM = Application.Current.MainWindow.DataContext as MainViewModel;
             if (mainVM == null)
                 return;
 
-            mainVM.AbrirEdicaoOrcamento(OrcamentoSelecionado);
+
+            mainVM.TelaAtual = new OrcamentosViewModel(OrcamentoSelecionado);
         }
+
+
+
 
 
         // ===============================
@@ -119,159 +139,155 @@ namespace MecAppIN.ViewModels
         // ===============================
         private void Excluir()
         {
-            var resultado = MessageBox.Show(
-               $"Deseja excluir o orçamento do cliente \"{OrcamentoSelecionado.NomeClienteExibicao}\"?",
-            "Confirmação",
-             MessageBoxButton.YesNo,
-             MessageBoxImage.Warning);
-
             if (OrcamentoSelecionado == null)
                 return;
+
+            var resultado = MessageBox.Show(
+                $"Deseja excluir o orçamento do cliente \"{OrcamentoSelecionado.ClienteNome}\"?\n\n" +
+                "O PDF também será removido.",
+                "Confirmação",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning
+            );
 
             if (resultado != MessageBoxResult.Yes)
                 return;
 
-            using var db = new AppDbContext();
-            db.Orcamentos.Remove(OrcamentoSelecionado);
-            db.SaveChanges();
+            try
+            {
+                var caminhoPdf = ObterCaminhoPdf(OrcamentoSelecionado);
 
-            Orcamentos.Remove(OrcamentoSelecionado);
+                if (File.Exists(caminhoPdf))
+                    File.Delete(caminhoPdf);
+
+                using var db = new AppDbContext();
+                db.Orcamentos.Remove(OrcamentoSelecionado);
+                db.SaveChanges();
+
+                Orcamentos.Remove(OrcamentoSelecionado);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erro ao excluir orçamento:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
         }
 
+
         // ===============================
-        // CRIAR ORDEM DE SERVIÇO
+        // ABRIR PDF DO ORÇAMENTO
         // ===============================
-        private void CriarOrdemServico()
+        private void AbrirPdf()
         {
-            MessageBox.Show("Criar Ordem de Serviço a partir do orçamento (próximo passo).");
+            var caminhoPdf = Path.Combine(
+                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
+                "PDFs",
+                "Orcamentos",
+                OrcamentoSelecionado.Data.Year.ToString(),
+                OrcamentoSelecionado.Data.Month.ToString("D2"),
+                $"ORCAMENTO_{OrcamentoSelecionado.Id}.pdf"
+            );
+
+            if (!File.Exists(caminhoPdf))
+            {
+                MessageBox.Show(
+                    "PDF do orçamento não encontrado.",
+                    "Arquivo não encontrado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = caminhoPdf,
+                UseShellExecute = true
+            });
         }
 
-        // ===============================
-        // IMPRIMIR ORÇAMENTO
-        // ===============================
-        private void Imprimir()
+
+
+        private void CriarOrdemServico()
         {
             if (OrcamentoSelecionado == null)
                 return;
 
-            if (OrcamentoSelecionado.Itens == null || !OrcamentoSelecionado.Itens.Any())
+            try
             {
-                MessageBox.Show("O orçamento não possui itens para impressão.",
-                                "Atenção",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
+                var service = new OrcamentoService();
+                service.ConverterEmOsEExcluir(OrcamentoSelecionado);
+
+                Orcamentos.Remove(OrcamentoSelecionado);
+
+                MessageBox.Show("OS criada e orçamento excluído com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+
+
+        private string ObterCaminhoPdf(Orcamentos o)
+        {
+            return Path.Combine(
+                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
+                "PDFs",
+                "Orcamentos",
+                o.Data.Year.ToString(),
+                o.Data.Month.ToString("D2"),
+                $"ORCAMENTO_{o.Id}.pdf"
+            );
+        }
+
+
+        private void ImprimirOrcamento()
+        {
+            if (OrcamentoSelecionado == null)
+                return;
+
+            var caminhoPdf = ObterCaminhoPdf(OrcamentoSelecionado);
+
+            if (!File.Exists(caminhoPdf))
+            {
+                MessageBox.Show("PDF do orçamento não encontrado.");
                 return;
             }
 
             var printDialog = new PrintDialog();
-
             if (printDialog.ShowDialog() != true)
                 return;
 
-            // ===============================
-            // LAYOUT DE IMPRESSÃO
-            // ===============================
-            var painel = new StackPanel
+            var tempXps = Path.Combine(
+                Path.GetTempPath(),
+                $"ORCAMENTO_{OrcamentoSelecionado.Id}.xps"
+            );
+
+            try
             {
-                Margin = new Thickness(30),
-                Width = printDialog.PrintableAreaWidth
-            };
+                var pdf = new OrcamentoPdf(OrcamentoSelecionado);
+                pdf.GenerateXps(tempXps);
 
-            painel.Children.Add(new TextBlock
-            {
-                Text = "ORÇAMENTO",
-                FontSize = 22,
-                FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
+                using var xpsDoc = new XpsDocument(tempXps, FileAccess.Read);
+                var paginator = xpsDoc.GetFixedDocumentSequence().DocumentPaginator;
 
-            painel.Children.Add(new TextBlock
-            {
-                Text = $"Cliente: {OrcamentoSelecionado.NomeClienteExibicao}"
-            });
-
-            painel.Children.Add(new TextBlock
-            {
-                Text = $"Veículo: {OrcamentoSelecionado.Veiculo}"
-            });
-
-            painel.Children.Add(new TextBlock
-            {
-                Text = $"Placa: {OrcamentoSelecionado.Placa}"
-            });
-
-            painel.Children.Add(new TextBlock
-            {
-                Text = $"Data: {OrcamentoSelecionado.Data:dd/MM/yyyy}",
-                Margin = new Thickness(0, 0, 0, 15)
-            });
-
-            painel.Children.Add(new Separator());
-
-            // ===============================
-            // ITENS
-            // ===============================
-            foreach (var item in OrcamentoSelecionado.Itens)
-            {
-                var linha = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(0, 5, 0, 5)
-                };
-
-                linha.Children.Add(new TextBlock
-                {
-                    Text = item.Servico,
-                    Width = 260
-                });
-
-                linha.Children.Add(new TextBlock
-                {
-                    Text = item.Quantidade.ToString(),
-                    Width = 60
-                });
-
-                linha.Children.Add(new TextBlock
-                {
-                    Text = item.ValorUnitario.ToString("C"),
-                    Width = 100
-                });
-
-                linha.Children.Add(new TextBlock
-                {
-                    Text = (item.Quantidade * item.ValorUnitario).ToString("C"),
-                    Width = 100
-                });
-
-                painel.Children.Add(linha);
+                printDialog.PrintDocument(
+                    paginator,
+                    $"Orçamento #{OrcamentoSelecionado.Id}"
+                );
             }
-
-            painel.Children.Add(new Separator());
-
-            painel.Children.Add(new TextBlock
+            finally
             {
-                Text = $"TOTAL: {OrcamentoSelecionado.Total:C}",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Right,
-                Margin = new Thickness(0, 10, 0, 0)
-            });
-
-            // ===============================
-            // MEDIR / ORGANIZAR
-            // ===============================
-            painel.Measure(new System.Windows.Size(
-                printDialog.PrintableAreaWidth,
-                printDialog.PrintableAreaHeight));
-
-            painel.Arrange(new Rect(new Point(0, 0), painel.DesiredSize));
-
-            // ===============================
-            // IMPRIMIR
-            // ===============================
-            printDialog.PrintVisual(painel, "Impressão de Orçamento");
+                if (File.Exists(tempXps))
+                    File.Delete(tempXps);
+            }
         }
+
 
     }
 }

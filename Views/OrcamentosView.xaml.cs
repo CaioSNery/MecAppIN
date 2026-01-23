@@ -1,6 +1,9 @@
 using MecAppIN.Models;
 using MecAppIN.ViewModels;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace MecAppIN.Views
 {
@@ -10,6 +13,23 @@ namespace MecAppIN.Views
         {
             InitializeComponent();
         }
+
+        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            e.Handled = true;
+
+            DependencyObject parent = sender as DependencyObject;
+
+            while (parent != null && parent is not ScrollViewer)
+                parent = VisualTreeHelper.GetParent(parent);
+
+            if (parent is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ScrollToVerticalOffset(
+                    scrollViewer.VerticalOffset - e.Delta
+                );
+            }
+            }
 
         private void ClientesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

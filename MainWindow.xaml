@@ -97,10 +97,6 @@
                         Height="45"
                         Margin="0,5"/>
 
-                <Button Content="Orçamentos"
-                        Command="{Binding AbrirOrcamentosCommand}"
-                        Height="45"
-                        Margin="0,5"/>
 
                 <Button Content="Buscar Orçamentos"
                         Command="{Binding AbrirBuscarOrcamentosCommand}"

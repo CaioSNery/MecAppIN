@@ -1,30 +1,27 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace MecAppIN.Models
 {
     public class Orcamentos
     {
         public int Id { get; set; }
-    public DateTime Data { get; set; }
-    public decimal Total { get; set; }
+        public DateTime Data { get; set; }
 
-    public int? ClienteId { get; set; }
-    public Clientes Cliente { get; set; }
+        public int? ClienteId { get; set; }
+        public string ClienteNome { get; set; }
 
-    public string ClienteNome { get; set; } 
-    public string Veiculo { get; set; }
-    public string Placa { get; set; }
+        public string Veiculo { get; set; }
+        public string Placa { get; set; }
 
-    public string NomeClienteExibicao
-{
-    get
-    {
-        if (Cliente != null)
-            return Cliente.Nome;
+        public decimal Total { get; set; }
 
-        return ClienteNome;
-    }
-}
+        public int NumeroOs { get; set; } = 0;
 
+        public ICollection<ItemOrcamento> Itens { get; set; }
 
-    public List<ItemOrcamento> Itens { get; set; } = new();
+        
+        [NotMapped]
+        public string NumeroOsExibicao =>
+            NumeroOs > 0 ? NumeroOs.ToString() : "--";
     }
 }

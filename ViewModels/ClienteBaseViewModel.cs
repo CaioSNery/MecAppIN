@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using MecAppIN.Data;
 using MecAppIN.Models;
 using Microsoft.EntityFrameworkCore;
@@ -24,12 +20,15 @@ namespace MecAppIN.ViewModels
             {
                 _clienteSelecionado = value;
                 OnPropertyChanged();
-                AtualizarDadosCliente();
+
+                if (!_isCarregandoEdicao)
+                    AtualizarDadosCliente();
             }
         }
 
         private string _textoClienteDigitado;
         private bool _isSelecionandoCliente;
+        private bool _isCarregandoEdicao; 
 
         public string TextoClienteDigitado
         {
@@ -42,15 +41,17 @@ namespace MecAppIN.ViewModels
                 _textoClienteDigitado = value;
                 OnPropertyChanged();
 
-                if (!_isSelecionandoCliente)
+                if (!_isSelecionandoCliente && !_isCarregandoEdicao)
                     BuscarClientes();
             }
         }
 
-
         public string ClienteEndereco { get; set; }
         public string ClienteTelefone { get; set; }
 
+        // ===============================
+        // BUSCA
+        // ===============================
         protected void BuscarClientes()
         {
             using var db = new AppDbContext();
@@ -71,6 +72,9 @@ namespace MecAppIN.ViewModels
                 Clientes.Add(c);
         }
 
+        // ===============================
+        // ATUALIZAR DADOS
+        // ===============================
         protected void AtualizarDadosCliente()
         {
             if (ClienteSelecionado == null)
@@ -88,10 +92,32 @@ namespace MecAppIN.ViewModels
             _isSelecionandoCliente = false;
         }
 
+        // ===============================
+        // 🔥 MÉTODO PARA EDIÇÃO
+        // ===============================
+        protected void PreencherClienteEmModoEdicao(Clientes cliente)
+        {
+            if (cliente == null)
+                return;
 
+            _isCarregandoEdicao = true;
+
+            ClienteSelecionado = cliente;
+            TextoClienteDigitado = cliente.Nome;
+            ClienteEndereco = cliente.Endereco;
+            ClienteTelefone = cliente.Telefone;
+
+            OnPropertyChanged(nameof(ClienteEndereco));
+            OnPropertyChanged(nameof(ClienteTelefone));
+
+            _isCarregandoEdicao = false;
+        }
+
+        // ===============================
+        // INotifyPropertyChanged
+        // ===============================
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string prop = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
-
 }

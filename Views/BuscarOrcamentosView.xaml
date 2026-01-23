@@ -45,23 +45,41 @@
                 <DataGrid ItemsSource="{Binding Orcamentos}"
                           SelectedItem="{Binding OrcamentoSelecionado}"
                           AutoGenerateColumns="False"
-                          IsReadOnly="True">
+                          IsReadOnly="True"
+                          MouseDoubleClick="DataGrid_MouseDoubleClick"
+                          KeyDown="DataGrid_KeyDown">
+
 
                         <DataGrid.Columns>
+
+                                <!-- DATA -->
                                 <DataGridTextColumn Header="Data"
+                                                    Width="120"
                                                     Binding="{Binding Data, StringFormat=dd/MM/yyyy}"/>
 
+                                <!-- CLIENTE -->
                                 <DataGridTextColumn Header="Cliente"
-                                                Binding="{Binding ClienteNome}"/>
+                                                    Width="*"
+                                                    Binding="{Binding ClienteNome}"/>
 
-
+                                <!-- VEÍCULO -->
                                 <DataGridTextColumn Header="Veículo"
+                                                    Width="160"
                                                     Binding="{Binding Veiculo}"/>
 
+                                <!-- OS -->
+                                <DataGridTextColumn Header="OS"
+                                                    Width="80"
+                                                    Binding="{Binding NumeroOsExibicao}"/>
+
+                                <!-- TOTAL -->
                                 <DataGridTextColumn Header="Total"
+                                                    Width="120"
                                                     Binding="{Binding Total, StringFormat=C}"/>
+
                         </DataGrid.Columns>
                 </DataGrid>
+
 
         </DockPanel>
 </UserControl>

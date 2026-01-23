@@ -168,7 +168,7 @@ namespace MecAppIN.ViewModels
             db.SaveChanges();
 
             CarregarClientes();
-            ClienteSelecionado = new Clientes(); // limpa formulário
+            ClienteSelecionado = new Clientes(); 
         }
 
 

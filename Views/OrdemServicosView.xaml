@@ -1,6 +1,7 @@
 <UserControl x:Class="MecAppIN.Views.OrdemServicosView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shared="clr-namespace:MecAppIN.Views.Shared">
 
     <UserControl.Resources>
 
@@ -146,499 +147,10 @@
             <!-- ========================= -->
             <!-- SERVIÇOS -->
             <!-- ========================= -->
-            <GroupBox Header="Serviços"
-                      Margin="0,0,0,20">
-                <StackPanel Margin="10">
+            <shared:ServicosMotorView />
 
-                    <!-- ================= BIELA ================= -->
-                    <GroupBox Header="Biela"
-                              Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- SERVIÇOS -->
-                            <!-- SERVIÇOS -->
-                            <DataGrid ItemsSource="{Binding ItensBiela}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="ServicosBiela_AddingNewItem">
-
-                                <DataGrid.Columns>
-
-                                    <!-- QUANTIDADE -->
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <!-- DESCRIÇÃO -->
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <!-- VALOR (SÓ EDITÁVEL PARA SERVIÇOS CRIADOS) -->
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged,
-                                      StringFormat=N2}"
-                                                        Width="90">
-
-                                        <!-- VISUAL -->
-                                        <DataGridTextColumn.ElementStyle>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.ElementStyle>
-
-                                        <!-- EDIÇÃO -->
-                                        <DataGridTextColumn.EditingElementStyle>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.EditingElementStyle>
-
-                                    </DataGridTextColumn>
-
-                                    <!-- TOTAL -->
-                                    <DataGridTextColumn Header="Total"
-                                                        Binding="{Binding Total, StringFormat=C}"
-                                                        IsReadOnly="True"
-                                                        Width="90"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-
-
-                            <!-- PEÇAS  -->
-                            <DataGrid Grid.Column="1"
-                                      ItemsSource="{Binding PecasBiela}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="PecasBiela_AddingNewItem">
-
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=C}"
-                                                        Width="80"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-
-                        </Grid>
-                    </GroupBox>
-
-                    <!-- ================= BLOCO ================= -->
-                    <GroupBox Header="Bloco"
-                              Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- ================= SERVIÇOS ================= -->
-                            <!-- SERVIÇOS -->
-                            <DataGrid ItemsSource="{Binding ItensBloco}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="ServicosBloco_AddingNewItem">
-
-                                <DataGrid.Columns>
-
-                                    <!-- QUANTIDADE -->
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <!-- DESCRIÇÃO -->
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <!-- VALOR (SÓ EDITÁVEL PARA SERVIÇOS CRIADOS) -->
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged,
-                                      StringFormat=N2}"
-                                                        Width="90">
-
-                                        <!-- VISUAL -->
-                                        <DataGridTextColumn.ElementStyle>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.ElementStyle>
-
-                                        <!-- EDIÇÃO -->
-                                        <DataGridTextColumn.EditingElementStyle>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.EditingElementStyle>
-
-                                    </DataGridTextColumn>
-
-                                    <!-- TOTAL -->
-                                    <DataGridTextColumn Header="Total"
-                                                        Binding="{Binding Total, StringFormat=C}"
-                                                        IsReadOnly="True"
-                                                        Width="90"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-
-                            <!-- ================= PEÇAS ================= -->
-                            <DataGrid Grid.Column="1"
-                                      ItemsSource="{Binding PecasBloco}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="PecasBloco_AddingNewItem">
-
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=C}"
-                                                        Width="80"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-                    </GroupBox>
-
-
-                    <!-- ================= CABEÇOTE ================= -->
-                    <GroupBox Header="Cabeçote"
-                              Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- ================= SERVIÇOS ================= -->
-                            <!-- SERVIÇOS -->
-                            <DataGrid ItemsSource="{Binding ItensCabecote}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="ServicosCabecote_AddingNewItem">
-
-                                <DataGrid.Columns>
-
-                                    <!-- QUANTIDADE -->
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <!-- DESCRIÇÃO -->
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <!-- VALOR (SÓ EDITÁVEL PARA SERVIÇOS CRIADOS) -->
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged,
-                                      StringFormat=N2}"
-                                                        Width="90">
-
-                                        <!-- VISUAL -->
-                                        <DataGridTextColumn.ElementStyle>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.ElementStyle>
-
-                                        <!-- EDIÇÃO -->
-                                        <DataGridTextColumn.EditingElementStyle>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.EditingElementStyle>
-
-                                    </DataGridTextColumn>
-
-                                    <!-- TOTAL -->
-                                    <DataGridTextColumn Header="Total"
-                                                        Binding="{Binding Total, StringFormat=C}"
-                                                        IsReadOnly="True"
-                                                        Width="90"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-                            <!-- ================= PEÇAS ================= -->
-                            <DataGrid Grid.Column="1"
-                                      ItemsSource="{Binding PecasCabecote}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="PecasCabeCote_AddingNewItem">
-
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=C}"
-                                                        Width="80"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-                    </GroupBox>
-
-
-                    <!-- ================= EIXO ================= -->
-                    <GroupBox Header="Eixo"
-                              Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- ================= SERVIÇOS ================= -->
-                            <!-- SERVIÇOS -->
-                            <DataGrid ItemsSource="{Binding ItensEixo}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="ServicosEixo_AddingNewItem">
-
-                                <DataGrid.Columns>
-
-                                    <!-- QUANTIDADE -->
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <!-- DESCRIÇÃO -->
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <!-- VALOR (SÓ EDITÁVEL PARA SERVIÇOS CRIADOS) -->
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged,
-                                      StringFormat=N2}"
-                                                        Width="90">
-
-                                        <!-- VISUAL -->
-                                        <DataGridTextColumn.ElementStyle>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.ElementStyle>
-
-                                        <!-- EDIÇÃO -->
-                                        <DataGridTextColumn.EditingElementStyle>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="IsEnabled"
-                                                        Value="{Binding ValorEditavel}"/>
-                                            </Style>
-                                        </DataGridTextColumn.EditingElementStyle>
-
-                                    </DataGridTextColumn>
-
-                                    <!-- TOTAL -->
-                                    <DataGridTextColumn Header="Total"
-                                                        Binding="{Binding Total, StringFormat=C}"
-                                                        IsReadOnly="True"
-                                                        Width="90"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-                            <!-- ================= PEÇAS ================= -->
-                            <DataGrid Grid.Column="1"
-                                      ItemsSource="{Binding PecasEixo}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="True"
-                                      CanUserDeleteRows="True"
-                                      IsReadOnly="False"
-                                      Height="150"
-                                      AddingNewItem="PecasEixo_AddingNewItem">
-
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Qtde"
-                                                        Binding="{Binding Quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="60"/>
-
-                                    <DataGridTextColumn Header="Descrição"
-                                                        Binding="{Binding Servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Width="*"/>
-
-                                    <DataGridTextColumn Header="Valor"
-                                                        Binding="{Binding ValorUnitario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=C}"
-                                                        Width="80"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-                    </GroupBox>
-                </StackPanel>
-            </GroupBox>
-
-
-            <!-- ================= MOTOR ================= -->
-            <GroupBox Header="Motor"
-                      Margin="0,0,0,10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- ================= SERVIÇOS ================= -->
-                    <!-- SERVIÇOS -->
-                    <DataGrid ItemsSource="{Binding ItensMotor}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="True"
-                              CanUserDeleteRows="True"
-                              IsReadOnly="False"
-                              Height="150"
-                              AddingNewItem="ServicosMotor_AddingNewItem">
-
-                        <DataGrid.Columns>
-
-                            <!-- QUANTIDADE -->
-                            <DataGridTextColumn Header="Qtde"
-                                                Binding="{Binding Quantidade,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                Width="60"/>
-
-                            <!-- DESCRIÇÃO -->
-                            <DataGridTextColumn Header="Descrição"
-                                                Binding="{Binding Servico,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged}"
-                                                Width="*"/>
-
-                            <!-- VALOR (SÓ EDITÁVEL PARA SERVIÇOS CRIADOS) -->
-                            <DataGridTextColumn Header="Valor"
-                                                Binding="{Binding ValorUnitario,
-                                      Mode=TwoWay,
-                                      UpdateSourceTrigger=PropertyChanged,
-                                      StringFormat=N2}"
-                                                Width="90">
-
-                                <!-- VISUAL -->
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="IsEnabled"
-                                                Value="{Binding ValorEditavel}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-
-                                <!-- EDIÇÃO -->
-                                <DataGridTextColumn.EditingElementStyle>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="IsEnabled"
-                                                Value="{Binding ValorEditavel}"/>
-                                    </Style>
-                                </DataGridTextColumn.EditingElementStyle>
-
-                            </DataGridTextColumn>
-
-                            <!-- TOTAL -->
-                            <DataGridTextColumn Header="Total"
-                                                Binding="{Binding Total, StringFormat=C}"
-                                                IsReadOnly="True"
-                                                Width="90"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-
-                    <!-- ================= PEÇAS ================= -->
-                    <DataGrid Grid.Column="1"
-                              ItemsSource="{Binding PecasMotor}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="True"
-                              CanUserDeleteRows="True"
-                              IsReadOnly="False"
-                              Height="150"
-                              AddingNewItem="PecasMotor_AddingNewItem">
-
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Qtde"
-                                                Binding="{Binding Quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Width="60"/>
-
-                            <DataGridTextColumn Header="Descrição"
-                                                Binding="{Binding Servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Width="*"/>
-
-                            <DataGridTextColumn Header="Valor"
-                                                Binding="{Binding ValorUnitario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=C}"
-                                                Width="80"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </GroupBox>
+            
+            
 
             <!-- ========================= -->
             <!-- TOTAIS PARCIAIS -->
@@ -667,8 +179,12 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
+
+                <!-- TOTAL GERAL -->
                 <!-- TOTAL GERAL -->
                 <TextBlock
                     Grid.Column="0"
@@ -678,23 +194,33 @@
                     VerticalAlignment="Center"
                     Margin="0,0,40,0"/>
 
-                <!-- BOTÃO -->
-
-                <Button Content="Atualizar OS"
+                <!-- ATUALIZAR OS (só quando editando) -->
+                <Button Grid.Column="1"
+                        Content="Atualizar OS"
                         Width="200"
                         Height="40"
                         Margin="0,0,10,0"
                         Command="{Binding AtualizarOsCommand}"
                         Visibility="{Binding Editando,
-                     Converter={StaticResource BoolToVisibilityConverter}}"/>
+             Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                <Button
-                    Grid.Column="1"
-                    Content="Imprimir OS"
-                    Width="200"
-                    Height="40"
-                    VerticalAlignment="Center"
-                    Command="{Binding ImprimirOsCommand}"/>
+                <!-- SALVAR COMO ORÇAMENTO-->
+                <Button Grid.Column="2"
+                        Content="Salvar como Orçamento"
+                        Width="200"
+                        Height="40"
+                        Margin="0,0,10,0"
+                        Command="{Binding SalvarComoOrcamentoCommand}"
+                        ToolTip="Salvar esta OS como Orçamento"/>
+
+
+                <!-- IMPRIMIR OS -->
+                <Button Grid.Column="3"
+                        Content="Imprimir OS"
+                        Width="200"
+                        Height="40"
+                        Command="{Binding ImprimirOsCommand}"/>
+
             </Grid>
 
 

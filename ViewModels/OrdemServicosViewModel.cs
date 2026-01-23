@@ -2,6 +2,7 @@ using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Enums;
 using MecAppIN.Models;
+using MecAppIN.Pdf;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
@@ -109,7 +110,7 @@ namespace MecAppIN.ViewModels
 
 
         public ICommand AtualizarOsCommand { get; }
-
+        public ICommand SalvarComoOrcamentoCommand { get; }
         public ICommand ImprimirOsCommand { get; }
 
         // ===============================
@@ -156,8 +157,31 @@ namespace MecAppIN.ViewModels
 
             ImprimirOsCommand = new RelayCommand(ImprimirOs);
             AtualizarOsCommand = new RelayCommand(AtualizarOs, () => Editando);
-
+            SalvarComoOrcamentoCommand = new RelayCommand(
+    SalvarComoOrcamento,
+    PodeSalvarComoOrcamento
+);
         }
+
+        private bool PodeSalvarComoOrcamento()
+        {
+            // só permite se tiver itens e NÃO estiver editando uma OS
+            return !Editando && ObterTodosItens().Any();
+        }
+
+
+        private List<ItemOrcamento> MapearItensParaOrcamento(List<ItemOrdemServico> itens)
+        {
+            return itens.Select(i => new ItemOrcamento
+            {
+                Servico = i.Servico,
+                Quantidade = i.Quantidade,
+                ValorUnitario = i.ValorUnitario,
+                Bloco = i.Bloco,
+                IsPeca = i.IsPeca
+            }).ToList();
+        }
+
 
         private void AtualizarOs()
         {
@@ -210,6 +234,10 @@ namespace MecAppIN.ViewModels
                 );
             }
         }
+
+
+
+
 
 
         private void InicializarPecas()
@@ -382,18 +410,29 @@ namespace MecAppIN.ViewModels
                         item.PropertyChanged -= Item_PropertyChanged;
 
                 OnPropertyChanged(nameof(TotalGeral));
+
+                // 🔥 AVISA O BOTÃO
+                (SalvarComoOrcamentoCommand as RelayCommand)
+                    ?.RaiseCanExecuteChanged();
             };
         }
 
+
         private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ItemOrdemServico.Total))
+            if (e.PropertyName == nameof(ItemOrdemServico.Total) ||
+                e.PropertyName == nameof(ItemOrdemServico.Quantidade) ||
+                e.PropertyName == nameof(ItemOrdemServico.Servico))
             {
                 OnPropertyChanged(nameof(TotalServicos));
                 OnPropertyChanged(nameof(TotalPecas));
                 OnPropertyChanged(nameof(TotalGeral));
+
+                // 🔥 ATUALIZA O BOTÃO
+                (SalvarComoOrcamentoCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
+
 
 
 
@@ -431,9 +470,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true // editável
             });
 
-            // // 2 linhas em branco
-            // ItensBiela.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Biela });
-            // ItensBiela.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Biela });
+            
         }
 
         private void CarregarItensBloco()
@@ -490,11 +527,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-            // // 4 linhas em branco
-            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
-            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
-            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
-            // ItensBloco.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Bloco });
+            
         }
 
         public void CarregarItensCabecote()
@@ -591,13 +624,6 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-
-            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-            // ItensCabecote.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Cabecote });
-
         }
 
         public void CarregarItensEixo()
@@ -644,8 +670,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-            // ItensEixo.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Eixo });
-            // ItensEixo.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Eixo });
+            
 
         }
 
@@ -694,12 +719,8 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-            // ItensMotor.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Motor });
-            // ItensMotor.Add(new ItemOrdemServico { Bloco = EBlocoMotor.Motor });
+            
         }
-
-
-
 
         // ===============================
         // ITENS POR MOTOR
@@ -765,10 +786,6 @@ namespace MecAppIN.ViewModels
             }).ToList();
 
         }
-
-
-
-
 
         // ===============================
         // IMPRIMIR
@@ -883,6 +900,81 @@ namespace MecAppIN.ViewModels
                     File.Delete(tempXps);
             }
         }
+
+        private void SalvarComoOrcamento()
+        {
+            var itensTela = ObterTodosItens();
+
+            if (!itensTela.Any())
+            {
+                MessageBox.Show("Não há itens para salvar no orçamento.");
+                return;
+            }
+
+            using var db = new AppDbContext();
+
+            var orcamento = new Orcamentos
+            {
+                Data = DateTime.Now,
+                ClienteId = ClienteSelecionado?.Id,
+                ClienteNome = ClienteSelecionado != null
+                    ? ClienteSelecionado.Nome
+                    : TextoClienteDigitado,
+                Veiculo = Veiculo,
+                Placa = Placa,
+                Total = TotalGeral,
+                NumeroOs = 0,
+                Itens = itensTela.Select(i => new ItemOrcamento
+                {
+                    Servico = i.Servico,
+                    Quantidade = i.Quantidade,
+                    ValorUnitario = i.ValorUnitario,
+                    Bloco = i.Bloco,
+                    IsPeca = i.IsPeca
+                }).ToList()
+            };
+
+            db.Orcamentos.Add(orcamento);
+            db.SaveChanges();
+            NumeroOs = 0;
+            LimparColecoes();
+            Veiculo = string.Empty;
+            Placa = string.Empty;
+            TextoClienteDigitado = string.Empty;
+
+            OnPropertyChanged(nameof(Veiculo));
+            OnPropertyChanged(nameof(Placa));
+            OnPropertyChanged(nameof(TextoClienteDigitado));
+
+            GerarPdfOrcamento(orcamento);
+
+            MessageBox.Show("Orçamento salvo com sucesso!");
+        }
+
+
+
+
+        private void GerarPdfOrcamento(Orcamentos orcamento)
+        {
+            var basePath = Path.Combine(
+                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
+                "PDFs",
+                "Orcamentos",
+                orcamento.Data.Year.ToString(),
+                orcamento.Data.Month.ToString("D2")
+            );
+
+            Directory.CreateDirectory(basePath);
+
+            var caminho = Path.Combine(
+                basePath,
+                $"ORCAMENTO_{orcamento.Id}.pdf"
+            );
+
+            var pdf = new OrcamentoPdf(orcamento);
+            pdf.GeneratePdf(caminho);
+        }
+
 
 
 
