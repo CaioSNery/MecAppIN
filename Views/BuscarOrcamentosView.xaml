@@ -19,19 +19,35 @@
                      Text="{Binding TextoBuscaCliente, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
 
-        <!-- PAGINAÇÃO -->
+        <!-- ===============================
+             PAGINAÇÃO (BOTTOM)
+        =============================== -->
         <Border DockPanel.Dock="Bottom"
                 Padding="6"
-                BorderBrush="#CCC"
+                Background="#F5F5F5"
+                BorderBrush="#CCCCCC"
                 BorderThickness="1"
                 CornerRadius="6"
                 HorizontalAlignment="Center"
                 Margin="0,10,0,0">
 
             <StackPanel Orientation="Horizontal">
-                <Button Content="◀ Anterior" Command="{Binding PaginaAnteriorCommand}" Margin="4"/>
-                <TextBlock Text="{Binding PaginaAtual}" FontWeight="Bold" Margin="8,0"/>
-                <Button Content="Próximo ▶" Command="{Binding ProximaPaginaCommand}" Margin="4"/>
+
+                <Button Content="◀ Anterior"
+                        Command="{Binding PaginaAnteriorCommand}"
+                        Padding="8,3"
+                        Margin="4"/>
+
+                <TextBlock Text="{Binding PaginaAtual}"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Margin="8,0"/>
+
+                <Button Content="Próximo ▶"
+                        Command="{Binding ProximaPaginaCommand}"
+                        Padding="8,3"
+                        Margin="4"/>
+
             </StackPanel>
         </Border>
 
