@@ -27,10 +27,12 @@ namespace MecAppIN.ViewModels
             set
             {
                 _textoBusca = value;
+                PaginaAtual = 1;
                 OnPropertyChanged();
-                FiltrarClientes();
+                CarregarClientes();
             }
         }
+
 
         private int _paginaAtual = 1;
         private const int TamanhoPagina = 20;
@@ -44,6 +46,18 @@ namespace MecAppIN.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        private int _totalPaginas;
+        public int TotalPaginas
+        {
+            get => _totalPaginas;
+            set
+            {
+                _totalPaginas = value;
+                OnPropertyChanged();
+            }
+        }
+
 
 
 
@@ -69,9 +83,13 @@ namespace MecAppIN.ViewModels
 
         private void ProximaPagina()
         {
+            if (PaginaAtual >= TotalPaginas)
+                return;
+
             PaginaAtual++;
             CarregarClientes();
         }
+
 
         private void PaginaAnterior()
         {
@@ -112,14 +130,25 @@ namespace MecAppIN.ViewModels
             if (!string.IsNullOrWhiteSpace(TextoBusca))
                 query = query.Where(c => c.Nome.Contains(TextoBusca));
 
-            query = query
+            var totalRegistros = query.Count();
+
+            TotalPaginas = (int)Math.Ceiling(
+                totalRegistros / (double)TamanhoPagina
+            );
+
+            if (PaginaAtual > TotalPaginas && TotalPaginas > 0)
+                PaginaAtual = TotalPaginas;
+
+            var clientesPaginados = query
                 .OrderBy(c => c.Nome)
                 .Skip((PaginaAtual - 1) * TamanhoPagina)
-                .Take(TamanhoPagina);
+                .Take(TamanhoPagina)
+                .ToList();
 
-            foreach (var c in query)
+            foreach (var c in clientesPaginados)
                 Clientes.Add(c);
         }
+
 
 
         private void Novo()
@@ -168,7 +197,7 @@ namespace MecAppIN.ViewModels
             db.SaveChanges();
 
             CarregarClientes();
-            ClienteSelecionado = new Clientes(); 
+            ClienteSelecionado = new Clientes();
         }
 
 

@@ -2,84 +2,53 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-        <DockPanel Margin="20">
+    <DockPanel Margin="20">
 
-                <!-- BOTÕES -->
-                <StackPanel DockPanel.Dock="Top"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center"
-                            Margin="0,0,0,10">
+        <!-- TOPO -->
+        <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10">
 
-                        <Button Content="Editar"
-                                Width="100"
-                                Margin="0,0,10,0"
-                                Command="{Binding EditarCommand}"/>
+            <Button Content="Editar" Width="100" Command="{Binding EditarCommand}"/>
+            <Button Content="Excluir" Width="100" Margin="5,0" Command="{Binding ExcluirCommand}"/>
+            <Button Content="Criar OS" Width="120" Margin="5,0" Command="{Binding CriarOrdemServicoCommand}"/>
+            <Button Content="Imprimir" Width="120" Margin="5,0" Command="{Binding ImprimirCommand}"/>
 
-                        <Button Content="Excluir"
-                                Width="100"
-                                Margin="0,0,10,0"
-                                Command="{Binding ExcluirCommand}"/>
+            <TextBlock Text="Buscar cliente:" Margin="20,0,5,0" VerticalAlignment="Center"/>
+            <TextBox Width="220"
+                     Text="{Binding TextoBuscaCliente, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
 
-                        <Button Content="Criar OS"
-                                Width="120"
-                                Margin="0,0,10,0"
-                                Command="{Binding CriarOrdemServicoCommand}"/>
+        <!-- PAGINAÇÃO -->
+        <Border DockPanel.Dock="Bottom"
+                Padding="6"
+                BorderBrush="#CCC"
+                BorderThickness="1"
+                CornerRadius="6"
+                HorizontalAlignment="Center"
+                Margin="0,10,0,0">
 
-                        <Button Content="Imprimir"
-                                Width="120"
-                                Margin="0,0,20,0"
-                                Command="{Binding ImprimirCommand}"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="◀ Anterior" Command="{Binding PaginaAnteriorCommand}" Margin="4"/>
+                <TextBlock Text="{Binding PaginaAtual}" FontWeight="Bold" Margin="8,0"/>
+                <Button Content="Próximo ▶" Command="{Binding ProximaPaginaCommand}" Margin="4"/>
+            </StackPanel>
+        </Border>
 
-                        <!-- 🔍 BUSCA -->
-                        <TextBlock Text="Buscar cliente:"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,5,0"/>
+        <!-- GRID -->
+        <DataGrid ItemsSource="{Binding Orcamentos}"
+                  SelectedItem="{Binding OrcamentoSelecionado}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True">
 
-                        <TextBox Width="220"
-                                 VerticalAlignment="Center"
-                                 Text="{Binding TextoBuscaCliente, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Data" Binding="{Binding Data, StringFormat=dd/MM/yyyy}" Width="120"/>
+                <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNome}" Width="*"/>
+                <DataGridTextColumn Header="Veículo" Binding="{Binding Veiculo}" Width="160"/>
+                <DataGridTextColumn Header="OS" Binding="{Binding NumeroOsExibicao}" Width="80"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=C}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
-
-                <!-- GRID -->
-                <DataGrid ItemsSource="{Binding Orcamentos}"
-                          SelectedItem="{Binding OrcamentoSelecionado}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          MouseDoubleClick="DataGrid_MouseDoubleClick"
-                          KeyDown="DataGrid_KeyDown">
-
-
-                        <DataGrid.Columns>
-
-                                <!-- DATA -->
-                                <DataGridTextColumn Header="Data"
-                                                    Width="120"
-                                                    Binding="{Binding Data, StringFormat=dd/MM/yyyy}"/>
-
-                                <!-- CLIENTE -->
-                                <DataGridTextColumn Header="Cliente"
-                                                    Width="*"
-                                                    Binding="{Binding ClienteNome}"/>
-
-                                <!-- VEÍCULO -->
-                                <DataGridTextColumn Header="Veículo"
-                                                    Width="160"
-                                                    Binding="{Binding Veiculo}"/>
-
-                                <!-- OS -->
-                                <DataGridTextColumn Header="OS"
-                                                    Width="80"
-                                                    Binding="{Binding NumeroOsExibicao}"/>
-
-                                <!-- TOTAL -->
-                                <DataGridTextColumn Header="Total"
-                                                    Width="120"
-                                                    Binding="{Binding Total, StringFormat=C}"/>
-
-                        </DataGrid.Columns>
-                </DataGrid>
-
-
-        </DockPanel>
+    </DockPanel>
 </UserControl>

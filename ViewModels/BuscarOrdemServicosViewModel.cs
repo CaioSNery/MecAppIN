@@ -1,14 +1,11 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
-using MecAppIN.Models;
-using MecAppIN.Services;
-using MecAppIN.Views;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,7 +13,7 @@ using System.Windows.Xps.Packaging;
 
 namespace MecAppIN.ViewModels
 {
-    public class BuscarOrdemServicosViewModel
+    public class BuscarOrdemServicosViewModel : INotifyPropertyChanged
     {
         public ObservableCollection<OrdemServicos> Ordens { get; set; }
 
@@ -38,9 +35,40 @@ namespace MecAppIN.ViewModels
             set
             {
                 _textoBuscaCliente = value;
+                _paginaAtual = 1;
                 Filtrar();
             }
         }
+
+        private int _paginaAtual = 1;
+        private const int TamanhoPagina = 40;
+
+        public int PaginaAtual
+        {
+            get => _paginaAtual;
+            set
+            {
+                if (_paginaAtual == value) return;
+
+                _paginaAtual = value;
+                OnPropertyChanged();
+                Filtrar();
+            }
+        }
+
+        private int _totalPaginas;
+        public int TotalPaginas
+        {
+            get => _totalPaginas;
+            set
+            {
+                _totalPaginas = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+
 
         private List<OrdemServicos> _todasOrdens;
 
@@ -48,9 +76,18 @@ namespace MecAppIN.ViewModels
         public ICommand ReimprimirCommand { get; }
         public ICommand ExcluirCommand { get; }
         public ICommand EditarCommand { get; }
+        public ICommand ProximaPaginaCommand { get; }
+        public ICommand PaginaAnteriorCommand { get; }
+
 
 
         private readonly MainViewModel _mainVm;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string prop = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+        }
 
         public BuscarOrdemServicosViewModel(MainViewModel mainVm)
         {
@@ -62,7 +99,29 @@ namespace MecAppIN.ViewModels
             ReimprimirCommand = new RelayCommand(Reimprimir, PodeExecutar);
             ExcluirCommand = new RelayCommand(Excluir, PodeExecutar);
             EditarCommand = new RelayCommand(Editar, PodeExecutar);
+            ProximaPaginaCommand = new RelayCommand(ProximaPagina);
+            PaginaAnteriorCommand = new RelayCommand(PaginaAnterior);
+
         }
+
+        private void ProximaPagina()
+        {
+            if (PaginaAtual >= TotalPaginas)
+                return;
+
+            PaginaAtual++;
+        }
+
+
+        private void PaginaAnterior()
+        {
+            if (PaginaAtual <= 1)
+                return;
+
+            PaginaAtual--;
+        }
+
+
 
         private bool PodeExecutar()
         {
@@ -109,9 +168,22 @@ namespace MecAppIN.ViewModels
                     o.Id.ToString().Contains(termo)
                 ).ToList();
 
-            foreach (var os in filtradas)
+            TotalPaginas = (int)Math.Ceiling(
+                filtradas.Count / (double)TamanhoPagina
+            );
+
+            if (PaginaAtual > TotalPaginas && TotalPaginas > 0)
+                PaginaAtual = TotalPaginas;
+
+            var paginadas = filtradas
+                .Skip((PaginaAtual - 1) * TamanhoPagina)
+                .Take(TamanhoPagina);
+
+            foreach (var os in paginadas)
                 Ordens.Add(os);
         }
+
+
 
 
         // ===============================

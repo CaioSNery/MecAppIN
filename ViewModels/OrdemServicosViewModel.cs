@@ -145,7 +145,7 @@ namespace MecAppIN.ViewModels
             RegistrarEventos(ItensEixo);
             RegistrarEventos(ItensMotor);
 
-            InicializarPecas();
+            
 
             RegistrarEventos(PecasBiela);
             RegistrarEventos(PecasBloco);
@@ -169,18 +169,6 @@ namespace MecAppIN.ViewModels
             return !Editando && ObterTodosItens().Any();
         }
 
-
-        private List<ItemOrcamento> MapearItensParaOrcamento(List<ItemOrdemServico> itens)
-        {
-            return itens.Select(i => new ItemOrcamento
-            {
-                Servico = i.Servico,
-                Quantidade = i.Quantidade,
-                ValorUnitario = i.ValorUnitario,
-                Bloco = i.Bloco,
-                IsPeca = i.IsPeca
-            }).ToList();
-        }
 
 
         private void AtualizarOs()
@@ -214,7 +202,7 @@ namespace MecAppIN.ViewModels
 
                 db.SaveChanges();
 
-                // 🔥 SOMENTE PDF (sem imprimir)
+                
                 GerarPdfInterno(os);
 
                 MessageBox.Show(
@@ -240,43 +228,7 @@ namespace MecAppIN.ViewModels
 
 
 
-        private void InicializarPecas()
-        {
-            PecasBiela.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Biela,
-                IsPeca = true,
-                Quantidade = 1
-            });
-
-            PecasBloco.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Bloco,
-                IsPeca = true,
-                Quantidade = 1
-            });
-
-            PecasCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                IsPeca = true,
-                Quantidade = 1
-            });
-
-            PecasEixo.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Eixo,
-                IsPeca = true,
-                Quantidade = 1
-            });
-
-            PecasMotor.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Motor,
-                IsPeca = true,
-                Quantidade = 1
-            });
-        }
+        
 
         private void CarregarOrdem(int id)
         {
