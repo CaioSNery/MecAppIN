@@ -37,9 +37,11 @@
 
         <!-- GRID -->
         <DataGrid ItemsSource="{Binding Orcamentos}"
-                  SelectedItem="{Binding OrcamentoSelecionado}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True">
+          SelectedItem="{Binding OrcamentoSelecionado}"
+          AutoGenerateColumns="False"
+          IsReadOnly="True"
+          MouseDoubleClick="DataGrid_MouseDoubleClick">
+
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Data" Binding="{Binding Data, StringFormat=dd/MM/yyyy}" Width="120"/>

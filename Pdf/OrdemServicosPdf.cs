@@ -222,7 +222,4 @@ table.Cell().AlignRight().Text(valorTexto);
 }
 
 
-
-
-
 }
