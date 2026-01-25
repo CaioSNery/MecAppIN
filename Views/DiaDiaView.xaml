@@ -141,12 +141,18 @@
         <!-- FECHAR DIA -->
         <!-- ===================== -->
         <Button Grid.Row="3"
-                Content="Fechar Dia (Gerar PDF)"
-                Command="{Binding FecharDiaCommand}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                Width="220"
-                Height="40"
-                Margin="0,12,0,0"/>
+        Content="Fechar Dia (Gerar PDF)"
+        Command="{Binding FecharDiaCommand}"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Bottom"
+        Width="220"
+        Height="40"
+        Margin="0,12,0,0"
+        Background="#2E7D32"
+        Foreground="White"
+        FontWeight="Bold"/>
+
+        
+
     </Grid>
 </UserControl>

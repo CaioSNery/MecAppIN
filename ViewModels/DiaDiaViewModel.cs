@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 
 namespace MecAppIN.ViewModels
@@ -15,11 +16,11 @@ namespace MecAppIN.ViewModels
     {
         public string Titulo => "Financeiro - Movimento do Dia";
 
-          // 👉 LISTAS PARA O COMBOBOX
+          
         public Array TiposPagamento => Enum.GetValues(typeof(ETipoPagamento));
         public Array FormasPagamento => Enum.GetValues(typeof(ETipoFormaDePagamento));
 
-        // bindings já existentes
+        
         
 
         public ObservableCollection<LancamentoFinanceiro> Lancamentos { get; set; }
@@ -85,7 +86,7 @@ namespace MecAppIN.ViewModels
         }
 
         // =====================
-        // TOTAIS (estilo Excel)
+        // TOTAIS 
         // =====================
         public decimal TotalEntradas =>
             Lancamentos.Where(l => l.Tipo == ETipoPagamento.Entrada).Sum(l => l.Valor);
@@ -113,9 +114,17 @@ namespace MecAppIN.ViewModels
         // =====================
         // FECHAR DIA (PDF)
         // =====================
+        
         private void FecharDia()
-        {
-            PdfFinanceiroService.GerarPdfDiario(DateTime.Today, Lancamentos.ToList());
-        }
+{
+    PdfFinanceiroService.GerarPdfDiario(DateTime.Today, Lancamentos.ToList());
+
+    MessageBox.Show(
+        "Financeiro do dia salvo com sucesso!\nO PDF foi gerado.",
+        "Financeiro",
+        MessageBoxButton.OK,
+        MessageBoxImage.Information
+    );
+    }
     }
 }
