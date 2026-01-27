@@ -10,149 +10,250 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Título -->
             <RowDefinition Height="Auto"/>
+            <!-- Formulário -->
             <RowDefinition Height="*"/>
+            <!-- Tabelas -->
             <RowDefinition Height="Auto"/>
+            <!-- Rodapé -->
         </Grid.RowDefinitions>
 
         <!-- ===================== -->
         <!-- TÍTULO -->
         <!-- ===================== -->
         <TextBlock Text="{Binding Titulo}"
-                   FontSize="22"
+                   FontSize="24"
                    FontWeight="Bold"
-                   Margin="0,0,0,15"/>
+                   Margin="0,0,0,20"/>
 
         <!-- ===================== -->
         <!-- FORMULÁRIO -->
         <!-- ===================== -->
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
-                    Margin="0,0,0,12">
-
-            <!-- VALOR -->
-            <StackPanel Width="120">
-                <TextBlock Text="Valor"
-                           FontSize="12"
-                           Foreground="Gray"/>
-                <TextBox Text="{Binding Valor}"
-                         VerticalContentAlignment="Center"/>
-            </StackPanel>
-
-            <!-- TIPO -->
-            <StackPanel Width="140" Margin="10,0,0,0">
-                <TextBlock Text="Entrada / Saída"
-                           FontSize="12"
-                           Foreground="Gray"/>
-                <ComboBox ItemsSource="{Binding TiposPagamento}"
-                          SelectedItem="{Binding Tipo}"/>
-            </StackPanel>
-
-            <!-- FORMA -->
-            <StackPanel Width="140" Margin="10,0,0,0">
-                <TextBlock Text="Forma Pagamento"
-                           FontSize="12"
-                           Foreground="Gray"/>
-                <ComboBox ItemsSource="{Binding FormasPagamento}"
-                          SelectedItem="{Binding Forma}"/>
-            </StackPanel>
-
-            <!-- BOTÃO -->
-            <Button Content="Adicionar"
-                    Command="{Binding AdicionarCommand}"
-                    Width="120"
-                    Height="40"
-                    Margin="15,18,0,0"/>
-        </StackPanel>
-
-        <!-- ===================== -->
-        <!-- TABELA -->
-        <!-- ===================== -->
-        <DataGrid Grid.Row="2"
-                  ItemsSource="{Binding Lancamentos}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False">
-
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Hora"
-                                    Binding="{Binding Data, StringFormat=HH:mm}"
-                                    Width="80"/>
-
-                <DataGridTextColumn Header="Tipo"
-                                    Binding="{Binding Tipo}"
-                                    Width="120"/>
-
-                <DataGridTextColumn Header="Forma"
-                                    Binding="{Binding Forma}"
-                                    Width="140"/>
-
-                <DataGridTextColumn Header="Valor"
-                                    Binding="{Binding Valor, StringFormat=C}"
-                                    Width="120"/>
-            </DataGrid.Columns>
-        </DataGrid>
-
-        <!-- ===================== -->
-        <!-- TOTAIS -->
-        <!-- ===================== -->
-        <Border Grid.Row="3"
-                Margin="0,12,0,0"
-                Padding="10"
-                Background="#F2F2F2"
-                CornerRadius="6">
+        <Border Grid.Row="1"
+                Padding="15"
+                Background="#F5F5F5"
+                CornerRadius="6"
+                Margin="0,0,0,15">
 
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="140"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0"
-                           Text="Entradas:"
-                           FontWeight="Bold"/>
-                <TextBlock Grid.Column="1"
-                           Text="{Binding TotalEntradas, StringFormat=C}"/>
+                <!-- VALOR -->
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Valor"
+                               FontSize="12"
+                               Foreground="Gray"/>
+                    <TextBox Text="{Binding Valor}"
+                             VerticalContentAlignment="Center"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="2"
-                           Text="Saídas:"
-                           FontWeight="Bold"/>
-                <TextBlock Grid.Column="3"
-                           Text="{Binding TotalSaidas, StringFormat=C}"/>
+                <!-- TIPO -->
+                <StackPanel Grid.Column="1"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="Entrada / Saída"
+                               FontSize="12"
+                               Foreground="Gray"/>
+                    <ComboBox ItemsSource="{Binding TiposPagamento}"
+                              SelectedItem="{Binding Tipo}"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="0"
-                           Grid.Row="1"
-                           Margin="0,6,0,0"
-                           Text="Total Final:"
-                           FontWeight="Bold"/>
+                <!-- FORMA -->
+                <StackPanel Grid.Column="2"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="Forma Pagamento"
+                               FontSize="12"
+                               Foreground="Gray"/>
+                    <ComboBox ItemsSource="{Binding FormasPagamento}"
+                              SelectedItem="{Binding Forma}"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="1"
-                           Grid.Row="1"
-                           Margin="0,6,0,0"
-                           Text="{Binding TotalFinal, StringFormat=C}"
-                           FontSize="16"
-                           FontWeight="Bold"/>
+                <!-- DESCRIÇÃO -->
+                <StackPanel Grid.Column="3"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="Descrição"
+                               FontSize="12"
+                               Foreground="Gray"/>
+                    <TextBox Text="{Binding Descricao}"/>
+                </StackPanel>
+
+                <!-- BOTÃO -->
+                <Button Grid.Column="4"
+                        Content="Adicionar"
+                        Command="{Binding AdicionarCommand}"
+                        Style="{StaticResource BotaoVerdeStyle}"
+                        Height="42"
+                        VerticalAlignment="Bottom"
+                        Margin="15,0,0,0"/>
+
             </Grid>
         </Border>
 
         <!-- ===================== -->
-        <!-- FECHAR DIA -->
+        <!-- TABELAS -->
         <!-- ===================== -->
-        <Button Grid.Row="3"
-        Content="Fechar Dia (Gerar PDF)"
-        Command="{Binding FecharDiaCommand}"
-        HorizontalAlignment="Left"
-        VerticalAlignment="Bottom"
-        Width="220"
-        Height="40"
-        Margin="0,12,0,0"
-        Background="#2E7D32"
-        Foreground="White"
-        FontWeight="Bold"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-        
+            <!-- ===== ENTRADAS ===== -->
+            <StackPanel Grid.Column="0">
+
+                <TextBlock Text="ENTRADAS"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#2E7D32"
+                           Margin="0,0,0,5"/>
+
+                <DataGrid ItemsSource="{Binding Entradas}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          PreviewKeyDown="DataGrid_PreviewKeyDown">
+
+
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Hora"
+                                            Binding="{Binding Data, StringFormat=HH:mm}"
+                                            Width="80"/>
+
+                        <DataGridTextColumn Header="Forma"
+                                            Binding="{Binding Forma}"
+                                            Width="120"/>
+
+                        <!-- DESCRIÇÃO EDITÁVEL -->
+                        <DataGridTextColumn Header="Descrição"
+                                            Binding="{Binding Descricao}"
+                                            Width="*"/>
+
+
+                        <DataGridTextColumn Header="Valor"
+                                            Binding="{Binding Valor, StringFormat=C}"
+                                            Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="{Binding TotalEntradas, StringFormat='Total Entradas: {0:C}'}"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Right"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- ===== SAÍDAS ===== -->
+            <StackPanel Grid.Column="2">
+
+                <TextBlock Text="SAÍDAS"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#C62828"
+                           Margin="0,0,0,5"/>
+
+                <DataGrid ItemsSource="{Binding Saidas}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          PreviewKeyDown="DataGrid_PreviewKeyDown">
+
+
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Hora"
+                                            Binding="{Binding Data, StringFormat=HH:mm}"
+                                            Width="80"/>
+
+                        <DataGridTextColumn Header="Forma"
+                                            Binding="{Binding Forma}"
+                                            Width="120"/>
+
+                        <!-- DESCRIÇÃO EDITÁVEL -->
+                        <DataGridTextColumn Header="Descrição"
+                                            Binding="{Binding Descricao}"
+                                            Width="*"/>
+
+
+                        <DataGridTextColumn Header="Valor"
+                                            Binding="{Binding Valor, StringFormat=C}"
+                                            Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="{Binding TotalSaidas, StringFormat='Total Saídas: {0:C}'}"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Right"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ===================== -->
+        <!-- RODAPÉ -->
+        <!-- ===================== -->
+        <Border Grid.Row="3"
+                Margin="0,15,0,0"
+                Padding="12"
+                Background="#EEEEEE"
+                CornerRadius="6">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- BOTÕES -->
+                <Button Grid.Column="0"
+                        Content="Fechar Dia (Gerar PDF)"
+                        Command="{Binding FecharDiaCommand}"
+                        Style="{StaticResource BotaoVerdeStyle}"
+                        Width="220"
+                        Margin="0,0,10,0"/>
+
+                <Button Grid.Column="1"
+                        Content="Consultar"
+                        Click="AbrirConsulta_Click"
+                        Width="120"
+                        Height="42"
+                        Background="#1976D2"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        Cursor="Hand"/>
+
+
+
+                <!-- TOTAIS -->
+                <TextBlock Grid.Column="2"
+                           Text="{Binding TotalEntradas, StringFormat='Entradas: {0:C}'}"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="3"
+                           Text="{Binding TotalSaidas, StringFormat='Saídas: {0:C}'}"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="4"
+                           Text="{Binding TotalFinal, StringFormat='Total do Dia: {0:C}'}"
+                           FontWeight="Bold"
+                           FontSize="18"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
 
     </Grid>
+
 </UserControl>

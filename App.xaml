@@ -4,13 +4,74 @@
              xmlns:conv="clr-namespace:MecAppIN.Converters"
              StartupUri="MainWindow.xaml">
 
-    <Application.Resources>
-        <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
-        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Application.Resources>
+<Application.Resources>
 
-    
+    <!-- ===================== -->
+    <!-- CONVERTERS EXISTENTES -->
+    <!-- ===================== -->
+    <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
-    
+    <!-- ===================== -->
+    <!-- BOTÃO VERDE (GLOBAL) -->
+    <!-- ===================== -->
+    <Style x:Key="BotaoVerdeStyle"
+           TargetType="Button">
 
+        <!-- Aparência base -->
+        <Setter Property="Background" Value="#2E7D32"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+
+        <!-- Template -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6">
+
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Estados visuais -->
+                    <ControlTemplate.Triggers>
+
+                        <!-- Hover -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="#388E3C"/>
+                        </Trigger>
+
+                        <!-- Pressionado -->
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="#1B5E20"/>
+                        </Trigger>
+
+                        <!-- Desabilitado -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="#A5D6A7"/>
+                            <Setter Property="Foreground"
+                                    Value="#E0E0E0"/>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+</Application.Resources>
 </Application>
