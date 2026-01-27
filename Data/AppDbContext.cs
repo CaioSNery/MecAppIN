@@ -17,5 +17,13 @@ namespace MecAppIN.Data
         {
             options.UseSqlite("Data Source=oficina.db");
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrdemServicos>()
+                .Property(o => o.Pago)
+                .HasConversion<int>()  
+                .HasDefaultValue(0);
+        }
+
     }
 }

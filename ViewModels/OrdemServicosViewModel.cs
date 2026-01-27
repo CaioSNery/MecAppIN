@@ -8,7 +8,6 @@ using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.IO.Packaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -145,7 +144,7 @@ namespace MecAppIN.ViewModels
             RegistrarEventos(ItensEixo);
             RegistrarEventos(ItensMotor);
 
-            
+
 
             RegistrarEventos(PecasBiela);
             RegistrarEventos(PecasBloco);
@@ -188,21 +187,36 @@ namespace MecAppIN.ViewModels
                 using var db = new AppDbContext();
 
                 var os = db.OrdemServicos
+                    .Include(o => o.Cliente)
                     .Include(o => o.Itens)
                     .First(o => o.Id == NumeroOs);
 
+                // ===============================
+                // ATUALIZA DADOS PRINCIPAIS
+                // ===============================
                 os.ClienteId = ClienteSelecionado?.Id;
                 os.ClienteNome = TextoClienteDigitado;
+                os.TipoMotor = TipoMotorSelecionado;
                 os.Veiculo = Veiculo;
                 os.Placa = Placa;
                 os.Total = TotalGeral;
 
+                // ===============================
+                // ATUALIZA ITENS
+                // ===============================
                 db.ItensOrdensServicos.RemoveRange(os.Itens);
                 os.Itens = itensBanco;
 
                 db.SaveChanges();
 
-                
+                // ===============================
+                // 🔥 ENDEREÇO VEM DO CLIENTE
+                // ===============================
+                os.ClienteEndereco = os.Cliente?.Endereco ?? "";
+
+                // ===============================
+                // PDF ATUALIZADO
+                // ===============================
                 GerarPdfInterno(os);
 
                 MessageBox.Show(
@@ -224,11 +238,6 @@ namespace MecAppIN.ViewModels
         }
 
 
-
-
-
-
-        
 
         private void CarregarOrdem(int id)
         {
@@ -422,7 +431,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true // editável
             });
 
-            
+
         }
 
         private void CarregarItensBloco()
@@ -479,7 +488,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-            
+
         }
 
         public void CarregarItensCabecote()
@@ -622,7 +631,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-            
+
 
         }
 
@@ -671,7 +680,7 @@ namespace MecAppIN.ViewModels
                 ValorEditavel = true
             });
 
-            
+
         }
 
         // ===============================
@@ -769,13 +778,24 @@ namespace MecAppIN.ViewModels
                         Data = DateTime.Now,
                         ClienteId = ClienteSelecionado?.Id,
                         ClienteNome = TextoClienteDigitado,
+
+                        ClienteEndereco = ClienteSelecionado != null
+                            ? ClienteSelecionado.Endereco
+                            : string.Empty,
+
+                        ClienteTelefone = ClienteSelecionado != null
+                            ? ClienteSelecionado.Telefone
+                            : string.Empty,
+
                         Veiculo = Veiculo,
                         Placa = Placa,
+                        TipoMotor = TipoMotorSelecionado,
                         Total = TotalGeral,
                         Itens = itensBanco
                     };
 
                     db.OrdemServicos.Add(os);
+                    db.SaveChanges();
                 }
                 // ===============================
                 // EDIÇÃO DE OS EXISTENTE
@@ -783,23 +803,30 @@ namespace MecAppIN.ViewModels
                 else
                 {
                     os = db.OrdemServicos
+                        .Include(o => o.Cliente)
                         .Include(o => o.Itens)
                         .First(o => o.Id == NumeroOs);
 
                     os.ClienteId = ClienteSelecionado?.Id;
                     os.ClienteNome = TextoClienteDigitado;
+
+                    // Atualiza endereço e telefone SOMENTE se houver cliente selecionado
+                    if (ClienteSelecionado != null)
+                    {
+                        os.ClienteEndereco = ClienteSelecionado.Endereco;
+                        os.ClienteTelefone = ClienteSelecionado.Telefone;
+                    }
+
                     os.Veiculo = Veiculo;
+                    os.TipoMotor = TipoMotorSelecionado;
                     os.Placa = Placa;
                     os.Total = TotalGeral;
 
-                    // Remove itens antigos
                     db.ItensOrdensServicos.RemoveRange(os.Itens);
-
-                    // Adiciona itens novos
                     os.Itens = itensBanco;
-                }
 
-                db.SaveChanges();
+                    db.SaveChanges();
+                }
 
                 // ===============================
                 // PDF + IMPRESSÃO
@@ -817,8 +844,6 @@ namespace MecAppIN.ViewModels
                 );
             }
         }
-
-
 
 
         private void ImprimirOsComDialogo(OrdemServicos os)

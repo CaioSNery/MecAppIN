@@ -166,10 +166,16 @@ namespace MecAppIN.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ClienteEndereco")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("ClienteId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ClienteNome")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClienteTelefone")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Data")
@@ -178,7 +184,15 @@ namespace MecAppIN.Migrations
                     b.Property<int?>("OrcamentoId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Pago")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Placa")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TipoMotor")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Total")

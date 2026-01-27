@@ -1,5 +1,6 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
+using MecAppIN.Enums;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
@@ -40,6 +41,23 @@ namespace MecAppIN.ViewModels
             }
         }
 
+        private EFiltroPagamento _filtroPagamento = EFiltroPagamento.Todas;
+        public EFiltroPagamento FiltroPagamento
+        {
+            get => _filtroPagamento;
+            set
+            {
+                if (_filtroPagamento == value)
+                    return;
+
+                _filtroPagamento = value;
+                PaginaAtual = 1;
+                Filtrar();
+            }
+        }
+
+
+
         private int _paginaAtual = 1;
         private const int TamanhoPagina = 40;
 
@@ -78,6 +96,10 @@ namespace MecAppIN.ViewModels
         public ICommand EditarCommand { get; }
         public ICommand ProximaPaginaCommand { get; }
         public ICommand PaginaAnteriorCommand { get; }
+        public ICommand MostrarPagasCommand { get; }
+        public ICommand MostrarNaoPagasCommand { get; }
+        public ICommand MostrarTodasCommand { get; }
+
 
 
 
@@ -101,6 +123,24 @@ namespace MecAppIN.ViewModels
             EditarCommand = new RelayCommand(Editar, PodeExecutar);
             ProximaPaginaCommand = new RelayCommand(ProximaPagina);
             PaginaAnteriorCommand = new RelayCommand(PaginaAnterior);
+            MostrarPagasCommand = new RelayCommand(() =>
+ {
+     PaginaAtual = 1;
+     FiltroPagamento = EFiltroPagamento.Pagas;
+ });
+
+            MostrarNaoPagasCommand = new RelayCommand(() =>
+            {
+                PaginaAtual = 1;
+                FiltroPagamento = EFiltroPagamento.NaoPagas;
+            });
+
+            MostrarTodasCommand = new RelayCommand(() =>
+            {
+                PaginaAtual = 1;
+                FiltroPagamento = EFiltroPagamento.Todas;
+            });
+
 
         }
 
@@ -143,12 +183,66 @@ namespace MecAppIN.ViewModels
             using var db = new AppDbContext();
 
             _todasOrdens = db.OrdemServicos
+    .Include(o => o.Itens)
+    .OrderByDescending(o => o.Data)
+    .ToList();
+
+            RegistrarEventos(_todasOrdens);
+            Filtrar();
+
+        }
+
+        private void RegistrarEventos(IEnumerable<OrdemServicos> ordens)
+        {
+            foreach (var os in ordens)
+            {
+                os.PropertyChanged -= Ordem_PropertyChanged;
+                os.PropertyChanged += Ordem_PropertyChanged;
+            }
+        }
+        private void Ordem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(OrdemServicos.Pago))
+                return;
+
+            var os = sender as OrdemServicos;
+            if (os == null)
+                return;
+
+            SalvarPagoNoBanco(os);
+            PaginaAtual = 1;
+            Filtrar();
+
+
+        }
+
+        private void SalvarPagoNoBanco(OrdemServicos os)
+        {
+            using var db = new AppDbContext();
+
+            var entidade = db.OrdemServicos.First(o => o.Id == os.Id);
+            entidade.Pago = os.Pago;
+
+            db.SaveChanges();
+
+            // 🔥 RECARREGA A FONTE DA VERDADE
+            _todasOrdens = db.OrdemServicos
                 .Include(o => o.Itens)
                 .OrderByDescending(o => o.Data)
                 .ToList();
 
-            Filtrar();
+            RegistrarEventos(_todasOrdens);
         }
+
+        private void AtualizarListaMemoria(OrdemServicos os)
+        {
+            var item = _todasOrdens.First(o => o.Id == os.Id);
+            item.Pago = os.Pago;
+        }
+
+
+
+
 
         // ===============================
         // FILTRAR (DINÂMICO)
@@ -167,20 +261,32 @@ namespace MecAppIN.ViewModels
                     o.Placa.ToLower().Contains(termo) ||
                     o.Id.ToString().Contains(termo)
                 ).ToList();
+            if (FiltroPagamento == EFiltroPagamento.Pagas)
+            {
+                filtradas = filtradas.Where(o => o.Pago).ToList();
+            }
+            else if (FiltroPagamento == EFiltroPagamento.NaoPagas)
+            {
+                filtradas = filtradas.Where(o => !o.Pago).ToList();
+            }
+
 
             TotalPaginas = (int)Math.Ceiling(
-                filtradas.Count / (double)TamanhoPagina
-            );
+    filtradas.Count / (double)TamanhoPagina
+);
 
             if (PaginaAtual > TotalPaginas && TotalPaginas > 0)
                 PaginaAtual = TotalPaginas;
 
             var paginadas = filtradas
                 .Skip((PaginaAtual - 1) * TamanhoPagina)
-                .Take(TamanhoPagina);
+                .Take(TamanhoPagina)
+                .ToList();
 
+            Ordens.Clear();
             foreach (var os in paginadas)
                 Ordens.Add(os);
+
         }
 
 

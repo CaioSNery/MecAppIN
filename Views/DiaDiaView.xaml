@@ -237,19 +237,21 @@
                 <TextBlock Grid.Column="2"
                            Text="{Binding TotalEntradas, StringFormat='Entradas: {0:C}'}"
                            FontWeight="Bold"
+                           FontSize="15"
                            VerticalAlignment="Center"
                            Margin="0,0,20,0"/>
 
                 <TextBlock Grid.Column="3"
                            Text="{Binding TotalSaidas, StringFormat='Saídas: {0:C}'}"
                            FontWeight="Bold"
+                           FontSize="15"
                            VerticalAlignment="Center"
                            Margin="0,0,20,0"/>
 
                 <TextBlock Grid.Column="4"
                            Text="{Binding TotalFinal, StringFormat='Total do Dia: {0:C}'}"
                            FontWeight="Bold"
-                           FontSize="18"
+                           FontSize="20"
                            VerticalAlignment="Center"/>
             </Grid>
         </Border>

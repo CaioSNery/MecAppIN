@@ -147,10 +147,10 @@
             <!-- ========================= -->
             <!-- SERVIÇOS -->
             <!-- ========================= -->
-            <shared:ServicosMotorView />
+            <shared:ServicosMotorView/>
 
-            
-            
+
+
 
             <!-- ========================= -->
             <!-- TOTAIS PARCIAIS -->
@@ -204,22 +204,26 @@
                         Visibility="{Binding Editando,
              Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                <!-- SALVAR COMO ORÇAMENTO-->
+                <!-- SALVAR COMO ORÇAMENTO (AZUL) -->
                 <Button Grid.Column="2"
                         Content="Salvar como Orçamento"
                         Width="200"
                         Height="40"
                         Margin="0,0,10,0"
+                        Background="#2196F3"
+                        
                         Command="{Binding SalvarComoOrcamentoCommand}"
                         ToolTip="Salvar esta OS como Orçamento"/>
 
-
-                <!-- IMPRIMIR OS -->
+                <!-- IMPRIMIR OS (VERDE) -->
                 <Button Grid.Column="3"
                         Content="Imprimir OS"
                         Width="200"
                         Height="40"
+                        Background="#4CAF50"
+                        Foreground="White"
                         Command="{Binding ImprimirOsCommand}"/>
+
 
             </Grid>
 

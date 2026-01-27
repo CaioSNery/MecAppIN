@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MecAppIN.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260123141923_BuscarOS2")]
-    partial class BuscarOS2
+    [Migration("20260127154328_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,7 +102,33 @@ namespace MecAppIN.Migrations
 
                     b.HasIndex("OrcamentoId");
 
-                    b.ToTable("ItensOrcamento");
+                    b.ToTable("ItemOrcamento");
+                });
+
+            modelBuilder.Entity("MecAppIN.Models.LancamentoFinanceiro", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Descricao")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Forma")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Lancamentos");
                 });
 
             modelBuilder.Entity("MecAppIN.Models.Orcamentos", b =>
@@ -143,6 +169,9 @@ namespace MecAppIN.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ClienteEndereco")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("ClienteId")
                         .HasColumnType("INTEGER");
 
@@ -155,7 +184,15 @@ namespace MecAppIN.Migrations
                     b.Property<int?>("OrcamentoId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Pago")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Placa")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TipoMotor")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Total")

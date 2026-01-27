@@ -1,8 +1,10 @@
-
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using MecAppIN.ViewModels;
 
 namespace MecAppIN.Views
 {
@@ -13,9 +15,23 @@ namespace MecAppIN.Views
             InitializeComponent();
         }
 
-        private void DataGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (DataContext is not MecAppIN.ViewModels.BuscarOrdemServicosViewModel vm)
+            // 🔥 Se o clique veio da coluna "Pago", NÃO abre PDF
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                while (dep != null)
+                {
+                    if (dep is CheckBox || dep is DataGridCell cell && cell.Column.Header?.ToString() == "Pago")
+                    {
+                        e.Handled = true;
+                        return;
+                    }
+                    dep = VisualTreeHelper.GetParent(dep);
+                }
+            }
+
+            if (DataContext is not BuscarOrdemServicosViewModel vm)
                 return;
 
             if (vm.OrdemSelecionada == null)
@@ -47,6 +63,5 @@ namespace MecAppIN.Views
                 UseShellExecute = true
             });
         }
-
     }
 }

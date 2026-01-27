@@ -1,7 +1,6 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using MecAppIN.Models;
 using MecAppIN.Enums;
 
 public class OrdemServicoPdf : IDocument
@@ -48,11 +47,14 @@ public class OrdemServicoPdf : IDocument
             col.Item().Text("Telefone: (71)3252-6963/98722-0776");
 
             col.Item().PaddingTop(10).Row(row =>
-            {
-                row.RelativeItem().Text($"OS Nº: {_os.Id}");
-                row.RelativeItem().AlignRight()
-                    .Text($"Data: {_os.Data:dd/MM/yyyy}");
-            });
+ {
+     row.RelativeItem()
+         .Text($"OS Nº: {_os.Id}  |  Motor: {_os.TipoMotor}");
+
+     row.RelativeItem().AlignRight()
+         .Text($"Data: {_os.Data:dd/MM/yyyy}");
+ });
+
 
             col.Item().LineHorizontal(1);
         });
@@ -65,7 +67,15 @@ public class OrdemServicoPdf : IDocument
     {
         container.PaddingTop(10).Column(col =>
         {
-            col.Item().Text($"Cliente: {_os.ClienteNome}");
+            var endereco = string.IsNullOrWhiteSpace(_os.ClienteEndereco)
+                ? "Bahia"
+                : _os.ClienteEndereco;
+                var telefone = string.IsNullOrWhiteSpace(_os.ClienteTelefone)
+                ? "-"
+                : _os.ClienteTelefone;
+
+            col.Item().Text($"Cliente: {_os.ClienteNome}      Telefone: {telefone}    Endereço: {endereco}");     
+
             col.Item().Text($"Veículo: {_os.Veiculo}    Placa: {_os.Placa}");
 
             ImprimirBloco(col, EBlocoMotor.Biela, "BIELA");
@@ -116,8 +126,8 @@ public class OrdemServicoPdf : IDocument
     row.RelativeItem().PaddingRight(10).Element(c =>
     TabelaPadrao(c, "SERVIÇOS", servicos));
 
-row.RelativeItem().PaddingLeft(10).Element(c =>
-    TabelaPadrao(c, "PEÇAS", pecas));
+    row.RelativeItem().PaddingLeft(10).Element(c =>
+        TabelaPadrao(c, "PEÇAS", pecas));
 
 
 });
@@ -130,57 +140,57 @@ row.RelativeItem().PaddingLeft(10).Element(c =>
     string titulo,
     List<ItemOrdemServico> itens
 )
-{
-    container.Table(table =>
     {
-        table.ColumnsDefinition(c =>
+        container.Table(table =>
         {
-            c.ConstantColumn(40);   // Qtde
-            c.RelativeColumn();     // Descrição
-            c.ConstantColumn(70);   // Valor
+            table.ColumnsDefinition(c =>
+            {
+                c.ConstantColumn(40);   // Qtde
+                c.RelativeColumn();     // Descrição
+                c.ConstantColumn(70);   // Valor
+            });
+
+            // ===============================
+            // CABEÇALHO
+            // ===============================
+            table.Header(h =>
+            {
+                h.Cell().ColumnSpan(3)
+                    .BorderBottom(1)
+                    .Text(titulo)
+                    .Bold()
+                    .AlignCenter();
+
+                h.Cell().Text("Qtde").Bold();
+                h.Cell().Text("Descrição").Bold();
+                h.Cell().AlignRight().Text("Valor").Bold();
+            });
+
+            // ===============================
+            // ITENS (TODOS)
+            // ===============================
+            foreach (var item in itens)
+            {
+                table.Cell().Text(item.Quantidade.ToString());
+                table.Cell().Text(item.Servico);
+                string valorTexto;
+
+                if (item.IsPeca)
+                {
+                    valorTexto = item.ValorUnitario > 0
+                    ? item.ValorUnitario.ToString("C")
+                    : ""; // peça do cliente, sem valor
+                }
+                else
+                {
+                    valorTexto = item.Total.ToString("C");
+                }
+
+                table.Cell().AlignRight().Text(valorTexto);
+
+            }
         });
-
-        // ===============================
-        // CABEÇALHO
-        // ===============================
-        table.Header(h =>
-        {
-            h.Cell().ColumnSpan(3)
-                .BorderBottom(1)
-                .Text(titulo)
-                .Bold()
-                .AlignCenter();
-
-            h.Cell().Text("Qtde").Bold();
-            h.Cell().Text("Descrição").Bold();
-            h.Cell().AlignRight().Text("Valor").Bold();
-        });
-
-        // ===============================
-        // ITENS (TODOS)
-        // ===============================
-        foreach (var item in itens)
-        {
-            table.Cell().Text(item.Quantidade.ToString());
-            table.Cell().Text(item.Servico);
-           string valorTexto;
-
-if (item.IsPeca)
-{
-    valorTexto = item.ValorUnitario > 0
-        ? item.ValorUnitario.ToString("C")
-        : ""; // peça do cliente, sem valor
-}
-else
-{
-    valorTexto = item.Total.ToString("C");
-}
-
-table.Cell().AlignRight().Text(valorTexto);
-
-        }
-    });
-}
+    }
 
 
 
@@ -189,37 +199,37 @@ table.Cell().AlignRight().Text(valorTexto);
     // RODAPÉ / ASSINATURA
     // ===============================
     void Rodape(IContainer container)
-{
-    var totalServicos = _os.Itens.Where(i => !i.IsPeca).Sum(i => i.Total);
-    var totalPecas = _os.Itens.Where(i => i.IsPeca).Sum(i => i.Total);
-
-    container.PaddingTop(25).Column(col =>
     {
-        col.Item().LineHorizontal(1);
+        var totalServicos = _os.Itens.Where(i => !i.IsPeca).Sum(i => i.Total);
+        var totalPecas = _os.Itens.Where(i => i.IsPeca).Sum(i => i.Total);
 
-        col.Item().PaddingTop(10).Row(row =>
+        container.PaddingTop(25).Column(col =>
         {
-            row.RelativeItem()
-                .Text("Assinatura do Cliente")
-                .FontSize(9);
+            col.Item().LineHorizontal(1);
 
-            row.RelativeItem().AlignRight().Column(totais =>
+            col.Item().PaddingTop(10).Row(row =>
             {
-                totais.Item().Text($"Total Serviços: {totalServicos:C}")
-                    .FontSize(9)
-                    .Bold();
+                row.RelativeItem()
+                    .Text("Assinatura do Cliente")
+                    .FontSize(9);
 
-                totais.Item().Text($"Total Peças: {totalPecas:C}")
-                    .FontSize(9)
-                    .Bold();
+                row.RelativeItem().AlignRight().Column(totais =>
+                {
+                    totais.Item().Text($"Total Serviços: {totalServicos:C}")
+                        .FontSize(9)
+                        .Bold();
 
-                totais.Item().Text($"TOTAL GERAL: {_os.Total:C}")
-                    .FontSize(10)
-                    .Bold();
+                    totais.Item().Text($"Total Peças: {totalPecas:C}")
+                        .FontSize(9)
+                        .Bold();
+
+                    totais.Item().Text($"TOTAL GERAL: {_os.Total:C}")
+                        .FontSize(10)
+                        .Bold();
+                });
             });
         });
-    });
-}
+    }
 
 
 }

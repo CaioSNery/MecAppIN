@@ -5,25 +5,24 @@
 namespace MecAppIN.Migrations
 {
     /// <inheritdoc />
-    public partial class ItemOS2 : Migration
+    public partial class ClienteTelefone : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "ValorEditavel",
-                table: "ItensOrdensServicos",
-                type: "INTEGER",
-                nullable: false,
-                defaultValue: false);
+            migrationBuilder.AddColumn<string>(
+                name: "ClienteTelefone",
+                table: "OrdemServicos",
+                type: "TEXT",
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ValorEditavel",
-                table: "ItensOrdensServicos");
+                name: "ClienteTelefone",
+                table: "OrdemServicos");
         }
     }
 }
