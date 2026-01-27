@@ -109,7 +109,7 @@
                         Height="45"
                         Margin="0,5"/>
 
-                <Button Content="Dia-a-Dia(Financeiro)"
+                <Button Content="Financeiro"
                         Command="{Binding AbrirDiaDiaCommand}"
                         Height="45"
                         Margin="0,5"/>

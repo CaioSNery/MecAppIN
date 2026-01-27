@@ -1,0 +1,128 @@
+<Window x:Class="MecAppIN.Views.ConsultaFinanceiroWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:MecAppIN.ViewModels"
+        Title="Consulta Financeira"
+        Width="820"
+        Height="620"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+
+    <Window.DataContext>
+        <vm:ConsultaFinanceiroViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- TÍTULO -->
+        <TextBlock Text="Consulta Financeira"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+
+        <!-- FILTRO DE DATAS -->
+        <Border Grid.Row="1"
+                Padding="12"
+                Background="#F5F5F5"
+                CornerRadius="6"
+                Margin="0,0,0,15">
+
+
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- DATA INICIAL -->
+                <StackPanel>
+                    <TextBlock Text="Data Inicial"
+                            FontSize="12"/>
+                    <DatePicker SelectedDate="{Binding DataInicio}"/>
+                </StackPanel>
+
+                <!-- DATA FINAL -->
+                <StackPanel Grid.Column="1"
+                        Margin="10,0,0,0">
+                    <TextBlock Text="Data Final"
+                            FontSize="12"/>
+                    <DatePicker SelectedDate="{Binding DataFim}"/>
+                </StackPanel>
+
+                <!-- AÇÕES -->
+                <StackPanel Grid.Column="2"
+                            Margin="15,0,0,0"
+                            VerticalAlignment="Bottom">
+
+                    <Button Content="Consultar"
+                            Command="{Binding ConsultarCommand}"
+                            Style="{StaticResource BotaoVerdeStyle}"
+                            Height="38"
+                            Margin="0,0,0,8"/>
+
+                    <Button Content="Abrir PDF do Dia"
+                            Command="{Binding AbrirPdfCommand}"
+                            Height="36"
+                            Background="#455A64"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            BorderThickness="0"
+                            Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+
+
+        </Border>
+
+        <!-- RESULTADO -->
+        <StackPanel Grid.Row="2"
+                    VerticalAlignment="Top">
+
+            <!-- ATALHOS -->
+            <StackPanel Orientation="Horizontal"
+                        Margin="0,0,0,15">
+                <Button Content="Hoje"
+                        Command="{Binding HojeCommand}"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="Semana"
+                        Command="{Binding SemanaCommand}"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="Mês"
+                        Command="{Binding MesCommand}"/>
+            </StackPanel>
+
+            <!-- TOTAIS -->
+            <Border Padding="15"
+                    Background="#EEEEEE"
+                    CornerRadius="6">
+
+                <StackPanel>
+                    <TextBlock Text="{Binding TotalEntradas, StringFormat='Entradas: {0:C}'}"
+                               FontSize="14"
+                               FontWeight="Bold"/>
+
+                    <TextBlock Text="{Binding TotalSaidas, StringFormat='Saídas: {0:C}'}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Margin="0,5,0,0"/>
+
+                    <TextBlock Text="{Binding Resultado, StringFormat='Resultado: {0:C}'}"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </Grid>
+</Window>

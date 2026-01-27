@@ -16,12 +16,12 @@ namespace MecAppIN.ViewModels
     {
         public string Titulo => "Financeiro - Movimento do Dia";
 
-          
+
         public Array TiposPagamento => Enum.GetValues(typeof(ETipoPagamento));
         public Array FormasPagamento => Enum.GetValues(typeof(ETipoFormaDePagamento));
 
-        
-        
+
+
 
         public ObservableCollection<LancamentoFinanceiro> Lancamentos { get; set; }
             = new ObservableCollection<LancamentoFinanceiro>();
@@ -43,10 +43,22 @@ namespace MecAppIN.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-          protected void OnPropertyChanged([CallerMemberName] string prop = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-    }
+        protected void OnPropertyChanged([CallerMemberName] string prop = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+        }
+
+        private string _descricao;
+        public string Descricao
+        {
+            get => _descricao;
+            set
+            {
+                _descricao = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         private void CarregarLancamentosDoDia()
         {
@@ -65,12 +77,35 @@ namespace MecAppIN.ViewModels
 
         private void AdicionarLancamento()
         {
+            if (Valor <= 0)
+            {
+                MessageBox.Show(
+                    "O valor precisa ser maior que zero.",
+                    "Atenção",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Descricao))
+            {
+                MessageBox.Show(
+                    "A descrição é obrigatória.",
+                    "Atenção",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
             var lancamento = new LancamentoFinanceiro
             {
                 Data = DateTime.Now,
                 Valor = Valor,
                 Tipo = Tipo,
-                Forma = Forma
+                Forma = Forma,
+                Descricao = Descricao.Trim()
             };
 
             using var db = new AppDbContext();
@@ -80,10 +115,15 @@ namespace MecAppIN.ViewModels
             Lancamentos.Add(lancamento);
 
             Valor = 0;
+            Descricao = string.Empty;
+
             OnPropertyChanged(nameof(Valor));
+            OnPropertyChanged(nameof(Descricao));
 
             AtualizarTotais();
         }
+
+
 
         // =====================
         // TOTAIS 
@@ -100,31 +140,41 @@ namespace MecAppIN.ViewModels
         public decimal TotalCartao =>
             Lancamentos.Where(l => l.Forma == ETipoFormaDePagamento.Cartao).Sum(l => l.Valor);
 
+        public IEnumerable<LancamentoFinanceiro> Entradas =>
+Lancamentos.Where(l => l.Tipo == ETipoPagamento.Entrada);
+
+        public IEnumerable<LancamentoFinanceiro> Saidas =>
+            Lancamentos.Where(l => l.Tipo == ETipoPagamento.Saida);
+
+
         public decimal TotalFinal => TotalEntradas - TotalSaidas;
 
-        private void AtualizarTotais()
+        public void AtualizarTotais()
         {
             OnPropertyChanged(nameof(TotalEntradas));
             OnPropertyChanged(nameof(TotalSaidas));
             OnPropertyChanged(nameof(TotalDinheiro));
             OnPropertyChanged(nameof(TotalCartao));
             OnPropertyChanged(nameof(TotalFinal));
+            OnPropertyChanged(nameof(Entradas));
+            OnPropertyChanged(nameof(Saidas));
+
         }
 
         // =====================
         // FECHAR DIA (PDF)
         // =====================
-        
-        private void FecharDia()
-{
-    PdfFinanceiroService.GerarPdfDiario(DateTime.Today, Lancamentos.ToList());
 
-    MessageBox.Show(
-        "Financeiro do dia salvo com sucesso!\nO PDF foi gerado.",
-        "Financeiro",
-        MessageBoxButton.OK,
-        MessageBoxImage.Information
-    );
-    }
+        private void FecharDia()
+        {
+            PdfFinanceiroService.GerarPdfDiario(DateTime.Today, Lancamentos.ToList());
+
+            MessageBox.Show(
+                "Financeiro do dia salvo com sucesso!\nO PDF foi gerado.",
+                "Financeiro",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        }
     }
 }

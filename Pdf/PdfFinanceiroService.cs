@@ -23,17 +23,13 @@ namespace MecAppIN.Pdf
 
             var arquivo = Path.Combine(basePath, $"{data:yyyy-MM-dd}.pdf");
 
-            var entradas = lancamentos
-                .Where(l => l.Tipo == ETipoPagamento.Entrada)
-                .ToList();
-
-            var saidas = lancamentos
-                .Where(l => l.Tipo == ETipoPagamento.Saida)
-                .ToList();
+            var entradas = lancamentos.Where(l => l.Tipo == ETipoPagamento.Entrada).ToList();
+            var saidas = lancamentos.Where(l => l.Tipo == ETipoPagamento.Saida).ToList();
 
             var totalEntradas = entradas.Sum(l => l.Valor);
             var totalSaidas = saidas.Sum(l => l.Valor);
             var totalFinal = totalEntradas - totalSaidas;
+
 
             Document.Create(container =>
             {
@@ -55,14 +51,11 @@ namespace MecAppIN.Pdf
                         // =====================
                         // ENTRADAS
                         // =====================
-                        col.Item().Text("ENTRADAS")
-                            .FontSize(14)
-                            .Bold()
-                            .FontColor(Colors.Green.Darken2);
+                        col.Item().Text("ENTRADAS").Bold().FontSize(14);
 
-                        col.Item().Table(table =>
+                        col.Item().Table(t =>
                         {
-                            table.ColumnsDefinition(c =>
+                            t.ColumnsDefinition(c =>
                             {
                                 c.RelativeColumn();
                                 c.RelativeColumn();
@@ -70,7 +63,7 @@ namespace MecAppIN.Pdf
                                 c.RelativeColumn();
                             });
 
-                            table.Header(h =>
+                            t.Header(h =>
                             {
                                 h.Cell().Text("Hora").Bold();
                                 h.Cell().Text("Forma").Bold();
@@ -80,77 +73,66 @@ namespace MecAppIN.Pdf
 
                             foreach (var e in entradas)
                             {
-                                table.Cell().Text(e.Data.ToString("HH:mm"));
-                                table.Cell().Text(e.Forma.ToString());
-                                table.Cell().Text("Entrada");
-                                table.Cell().Text(e.Valor.ToString("C", CultureInfo.GetCultureInfo("pt-BR")));
+                                t.Cell().Text(e.Data.ToString("HH:mm"));
+                                t.Cell().Text(e.Forma.ToString());
+                                t.Cell().Text(e.Descricao);
+                                t.Cell().Text(e.Valor.ToString("C"));
                             }
 
-                            // TOTAL ENTRADAS
-                            table.Cell().ColumnSpan(3)
-                                 .Text("TOTAL ENTRADAS")
-                                 .Bold();
-
-                            table.Cell()
-                                 .Text(totalEntradas.ToString("C", CultureInfo.GetCultureInfo("pt-BR")))
-                                 .Bold();
+                            t.Cell().ColumnSpan(3).Text("TOTAL ENTRADAS").Bold();
+                            t.Cell().Text(totalEntradas.ToString("C")).Bold();
                         });
+
 
                         col.Item().PaddingVertical(10);
 
                         // =====================
                         // SAÍDAS
                         // =====================
-                        col.Item().Text("SAÍDAS")
-                            .FontSize(14)
-                            .Bold()
-                            .FontColor(Colors.Red.Darken2);
+                        col.Item().PaddingTop(10);
+                        col.Item().Text("SAÍDAS").Bold().FontSize(14);
 
-                        col.Item().Table(table =>
-                        {
-                            table.ColumnsDefinition(c =>
-                            {
-                                c.RelativeColumn();
-                                c.RelativeColumn();
-                                c.RelativeColumn();
-                                c.RelativeColumn();
-                            });
+                        col.Item().Table(t =>
+{
+    t.ColumnsDefinition(c =>
+    {
+        c.RelativeColumn();
+        c.RelativeColumn();
+        c.RelativeColumn();
+        c.RelativeColumn();
+    });
 
-                            table.Header(h =>
-                            {
-                                h.Cell().Text("Hora").Bold();
-                                h.Cell().Text("Forma").Bold();
-                                h.Cell().Text("Descrição").Bold();
-                                h.Cell().Text("Valor").Bold();
-                            });
+    t.Header(h =>
+    {
+        h.Cell().Text("Hora").Bold();
+        h.Cell().Text("Forma").Bold();
+        h.Cell().Text("Descrição").Bold();
+        h.Cell().Text("Valor").Bold();
+    });
 
-                            foreach (var s in saidas)
-                            {
-                                table.Cell().Text(s.Data.ToString("HH:mm"));
-                                table.Cell().Text(s.Forma.ToString());
-                                table.Cell().Text("Saída");
-                                table.Cell().Text(s.Valor.ToString("C", CultureInfo.GetCultureInfo("pt-BR")));
-                            }
+    foreach (var e in entradas)
+    {
+        t.Cell().Text(e.Data.ToString("HH:mm"));
+        t.Cell().Text(e.Forma.ToString());
+        t.Cell().Text(e.Descricao);
+        t.Cell().Text(e.Valor.ToString("C"));
+    }
 
-                            // TOTAL SAÍDAS
-                            table.Cell().ColumnSpan(3)
-                                 .Text("TOTAL SAÍDAS")
-                                 .Bold();
+    t.Cell().ColumnSpan(3).Text("TOTAL SAIDAS").Bold();
+    t.Cell().Text(totalEntradas.ToString("C")).Bold();
 
-                            table.Cell()
-                                 .Text(totalSaidas.ToString("C", CultureInfo.GetCultureInfo("pt-BR")))
-                                 .Bold();
-                        });
+});
                     });
 
                     // =====================
                     // RODAPÉ
                     // =====================
                     page.Footer()
-                        .AlignRight()
-                        .Text($"TOTAL DO DIA: {totalFinal.ToString("C", CultureInfo.GetCultureInfo("pt-BR"))}")
-                        .FontSize(14)
-                        .Bold();
+    .AlignRight()
+    .Text($"TOTAL DO DIA: {totalFinal:C}")
+    .FontSize(14)
+    .Bold();
+
                 });
             }).GeneratePdf(arquivo);
         }
