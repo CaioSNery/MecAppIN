@@ -3,15 +3,16 @@ using MecAppIN.Data;
 using MecAppIN.Enums;
 using MecAppIN.Models;
 using MecAppIN.Pdf;
+using MecAppIN.Pdfs;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Xps.Packaging;
+
 
 namespace MecAppIN.ViewModels
 {
@@ -183,40 +184,29 @@ namespace MecAppIN.ViewModels
                 }
 
                 var itensBanco = ClonarItensParaPersistencia(itensTela);
+                bool temCliente = ClienteSelecionado != null;
 
                 using var db = new AppDbContext();
 
                 var os = db.OrdemServicos
-                    .Include(o => o.Cliente)
                     .Include(o => o.Itens)
                     .First(o => o.Id == NumeroOs);
 
-                // ===============================
-                // ATUALIZA DADOS PRINCIPAIS
-                // ===============================
-                os.ClienteId = ClienteSelecionado?.Id;
-                os.ClienteNome = TextoClienteDigitado;
+                os.ClienteId = temCliente ? ClienteSelecionado.Id : null;
+                os.ClienteNome = temCliente ? ClienteSelecionado.Nome : TextoClienteDigitado;
+                os.ClienteEndereco = temCliente ? ClienteSelecionado.Endereco : ClienteEndereco;
+                os.ClienteTelefone = temCliente ? ClienteSelecionado.Telefone : ClienteTelefone;
+
                 os.TipoMotor = TipoMotorSelecionado;
                 os.Veiculo = Veiculo;
                 os.Placa = Placa;
                 os.Total = TotalGeral;
 
-                // ===============================
-                // ATUALIZA ITENS
-                // ===============================
                 db.ItensOrdensServicos.RemoveRange(os.Itens);
                 os.Itens = itensBanco;
 
                 db.SaveChanges();
 
-                // ===============================
-                // 🔥 ENDEREÇO VEM DO CLIENTE
-                // ===============================
-                os.ClienteEndereco = os.Cliente?.Endereco ?? "";
-
-                // ===============================
-                // PDF ATUALIZADO
-                // ===============================
                 GerarPdfInterno(os);
 
                 MessageBox.Show(
@@ -236,6 +226,7 @@ namespace MecAppIN.ViewModels
                 );
             }
         }
+
 
 
 
@@ -372,7 +363,7 @@ namespace MecAppIN.ViewModels
 
                 OnPropertyChanged(nameof(TotalGeral));
 
-                
+
                 (SalvarComoOrcamentoCommand as RelayCommand)
                     ?.RaiseCanExecuteChanged();
             };
@@ -749,6 +740,7 @@ namespace MecAppIN.ViewModels
         // ===============================
         // IMPRIMIR
         // ===============================
+
         private void ImprimirOs()
         {
             try
@@ -762,29 +754,20 @@ namespace MecAppIN.ViewModels
                 }
 
                 var itensBanco = ClonarItensParaPersistencia(itensTela);
+                bool temCliente = ClienteSelecionado != null;
 
                 using var db = new AppDbContext();
                 OrdemServicos os;
 
-                // ===============================
-                // NOVA OS
-                // ===============================
                 if (NumeroOs == 0)
                 {
                     os = new OrdemServicos
                     {
                         Data = DateTime.Now,
-                        ClienteId = ClienteSelecionado?.Id,
-                        ClienteNome = TextoClienteDigitado,
-
-                        ClienteEndereco = ClienteSelecionado != null
-                            ? ClienteSelecionado.Endereco
-                            : string.Empty,
-
-                        ClienteTelefone = ClienteSelecionado != null
-                            ? ClienteSelecionado.Telefone
-                            : string.Empty,
-
+                        ClienteId = temCliente ? ClienteSelecionado.Id : null,
+                        ClienteNome = temCliente ? ClienteSelecionado.Nome : TextoClienteDigitado,
+                        ClienteEndereco = temCliente ? ClienteSelecionado.Endereco : ClienteEndereco,
+                        ClienteTelefone = temCliente ? ClienteSelecionado.Telefone : ClienteTelefone,
                         Veiculo = Veiculo,
                         Placa = Placa,
                         TipoMotor = TipoMotorSelecionado,
@@ -795,29 +778,20 @@ namespace MecAppIN.ViewModels
                     db.OrdemServicos.Add(os);
                     db.SaveChanges();
                 }
-                // ===============================
-                // EDIÇÃO DE OS EXISTENTE
-                // ===============================
                 else
                 {
                     os = db.OrdemServicos
-                        .Include(o => o.Cliente)
                         .Include(o => o.Itens)
                         .First(o => o.Id == NumeroOs);
 
-                    os.ClienteId = ClienteSelecionado?.Id;
-                    os.ClienteNome = TextoClienteDigitado;
-
-                    // Atualiza endereço e telefone SOMENTE se houver cliente selecionado
-                    if (ClienteSelecionado != null)
-                    {
-                        os.ClienteEndereco = ClienteSelecionado.Endereco;
-                        os.ClienteTelefone = ClienteSelecionado.Telefone;
-                    }
+                    os.ClienteId = temCliente ? ClienteSelecionado.Id : null;
+                    os.ClienteNome = temCliente ? ClienteSelecionado.Nome : TextoClienteDigitado;
+                    os.ClienteEndereco = temCliente ? ClienteSelecionado.Endereco : ClienteEndereco;
+                    os.ClienteTelefone = temCliente ? ClienteSelecionado.Telefone : ClienteTelefone;
 
                     os.Veiculo = Veiculo;
-                    os.TipoMotor = TipoMotorSelecionado;
                     os.Placa = Placa;
+                    os.TipoMotor = TipoMotorSelecionado;
                     os.Total = TotalGeral;
 
                     db.ItensOrdensServicos.RemoveRange(os.Itens);
@@ -826,11 +800,10 @@ namespace MecAppIN.ViewModels
                     db.SaveChanges();
                 }
 
-                // ===============================
-                // PDF + IMPRESSÃO
-                // ===============================
-                GerarPdfInterno(os);
-                ImprimirOsComDialogo(os);
+                LimparColecoes();
+
+                var caminhoPdf = GerarPdfInterno(os);
+                PdfService.ImprimirPdfSeguro(caminhoPdf);
             }
             catch (Exception ex)
             {
@@ -843,38 +816,6 @@ namespace MecAppIN.ViewModels
             }
         }
 
-
-        private void ImprimirOsComDialogo(OrdemServicos os)
-        {
-            var printDialog = new PrintDialog();
-
-            if (printDialog.ShowDialog() != true)
-                return;
-
-            var tempXps = Path.Combine(
-                Path.GetTempPath(),
-                $"OS_{os.Id}.xps"
-            );
-
-            try
-            {
-                var pdf = new OrdemServicoPdf(os);
-                pdf.GenerateXps(tempXps);
-
-                using var xpsDoc = new XpsDocument(tempXps, FileAccess.Read);
-                var paginator = xpsDoc.GetFixedDocumentSequence().DocumentPaginator;
-
-                printDialog.PrintDocument(
-                    paginator,
-                    $"Ordem de Serviço #{os.Id}"
-                );
-            }
-            finally
-            {
-                if (File.Exists(tempXps))
-                    File.Delete(tempXps);
-            }
-        }
 
         private void SalvarComoOrcamento()
         {
@@ -897,10 +838,14 @@ namespace MecAppIN.ViewModels
                     : TextoClienteDigitado,
                 Veiculo = Veiculo,
                 Placa = Placa,
-                ClienteEndereco=ClienteSelecionado.Endereco,
-                ClienteTelefone=ClienteSelecionado.Telefone,
+                ClienteEndereco = ClienteSelecionado != null
+                ? ClienteSelecionado.Endereco
+                : ClienteEndereco,
+                ClienteTelefone = ClienteSelecionado != null
+                ? ClienteSelecionado.Telefone
+                : ClienteTelefone,
                 Total = TotalGeral,
-                TipoMotor=TipoMotorSelecionado,
+                TipoMotor = TipoMotorSelecionado,
                 NumeroOs = 0,
                 Itens = itensTela.Select(i => new ItemOrcamento
                 {

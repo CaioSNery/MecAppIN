@@ -1,19 +1,18 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Models;
-using MecAppIN.Pdf;
+using MecAppIN.Pdfs;
 using MecAppIN.Services;
 using Microsoft.EntityFrameworkCore;
-using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Xps.Packaging;
+
+
 
 
 namespace MecAppIN.ViewModels
@@ -190,7 +189,7 @@ namespace MecAppIN.ViewModels
         private void Editar()
         {
             var mainVM = Application.Current.MainWindow.DataContext as MainViewModel;
-            mainVM.TelaAtual = new OrcamentosViewModel(OrcamentoSelecionado);
+            mainVM.TelaAtual = new OrcamentosViewModel(OrcamentoSelecionado.Id);
         }
 
         private void Excluir()
@@ -300,48 +299,11 @@ namespace MecAppIN.ViewModels
 
             var caminhoPdf = ObterCaminhoPdf(OrcamentoSelecionado);
 
-            if (!File.Exists(caminhoPdf))
-            {
-                MessageBox.Show(
-                    "O arquivo PDF deste orçamento não foi encontrado.\n" +
-                    "Possivelmente ele foi removido ou movido.",
-                    "PDF não encontrado",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-                return;
-            }
+            PdfService.ImprimirPdfSeguro(caminhoPdf);
 
-            var printDialog = new PrintDialog();
-
-            if (printDialog.ShowDialog() != true)
-                return;
-
-            var tempXps = Path.Combine(
-                Path.GetTempPath(),
-                $"ORCAMENTO_{OrcamentoSelecionado.Id}.xps"
-            );
-
-            try
-            {
-                var pdf = new OrcamentoPdf(OrcamentoSelecionado);
-                pdf.GenerateXps(tempXps);
-
-                using var xpsDoc = new XpsDocument(tempXps, FileAccess.Read);
-                var paginator =
-                    xpsDoc.GetFixedDocumentSequence().DocumentPaginator;
-
-                printDialog.PrintDocument(
-                    paginator,
-                    $"Impressão Orçamento #{OrcamentoSelecionado.Id}"
-                );
-            }
-            finally
-            {
-                if (File.Exists(tempXps))
-                    File.Delete(tempXps);
-            }
         }
+
+       
 
 
         // ===============================

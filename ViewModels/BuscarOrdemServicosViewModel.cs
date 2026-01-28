@@ -1,10 +1,12 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Enums;
+using MecAppIN.Pdfs;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -225,7 +227,7 @@ namespace MecAppIN.ViewModels
 
             db.SaveChanges();
 
-            // 🔥 RECARREGA A FONTE DA VERDADE
+            
             _todasOrdens = db.OrdemServicos
                 .Include(o => o.Itens)
                 .OrderByDescending(o => o.Data)
@@ -234,15 +236,7 @@ namespace MecAppIN.ViewModels
             RegistrarEventos(_todasOrdens);
         }
 
-        private void AtualizarListaMemoria(OrdemServicos os)
-        {
-            var item = _todasOrdens.First(o => o.Id == os.Id);
-            item.Pago = os.Pago;
-        }
-
-
-
-
+        
 
         // ===============================
         // FILTRAR (DINÂMICO)
@@ -367,6 +361,8 @@ namespace MecAppIN.ViewModels
             );
         }
 
+       
+
         private void Reimprimir()
         {
             if (OrdemSelecionada == null)
@@ -374,50 +370,10 @@ namespace MecAppIN.ViewModels
 
             var caminhoPdf = ObterCaminhoPdf(OrdemSelecionada);
 
-            if (!File.Exists(caminhoPdf))
-            {
-                MessageBox.Show(
-                    "O arquivo PDF desta OS não foi encontrado.\n" +
-                    "Possivelmente ele foi removido ou movido.",
-                    "PDF não encontrado",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-                return;
-            }
+            PdfService.ImprimirPdfSeguro(caminhoPdf);
 
-            var printDialog = new PrintDialog();
-
-            if (printDialog.ShowDialog() != true)
-                return;
-
-
-            var tempXps = Path.Combine(
-                Path.GetTempPath(),
-                $"OS_{OrdemSelecionada.Id}.xps"
-            );
-
-            try
-            {
-
-                var pdf = new OrdemServicoPdf(OrdemSelecionada);
-                pdf.GenerateXps(tempXps);
-
-                using var xpsDoc = new XpsDocument(tempXps, FileAccess.Read);
-                var paginator =
-                    xpsDoc.GetFixedDocumentSequence().DocumentPaginator;
-
-                printDialog.PrintDocument(
-                    paginator,
-                    $"Reimpressão OS #{OrdemSelecionada.Id}"
-                );
-            }
-            finally
-            {
-                if (File.Exists(tempXps))
-                    File.Delete(tempXps);
-            }
         }
+
 
     }
 }

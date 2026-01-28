@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -9,27 +10,52 @@ namespace MecAppIN.ViewModels
 {
     public abstract class ClienteBaseViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<Clientes> Clientes { get; set; }
-            = new();
+        // ===============================
+        // LISTA DE CLIENTES (SUGESTÕES)
+        // ===============================
+        public ObservableCollection<Clientes> Clientes { get; set; } = new();
 
+        // ===============================
+        // FLAGS DE CONTROLE
+        // ===============================
+        protected bool _isSelecionandoCliente;
+        protected bool _isCarregandoEdicao;
+
+        // ===============================
+        // CLIENTE SELECIONADO
+        // ===============================
         private Clientes _clienteSelecionado;
         public Clientes ClienteSelecionado
         {
             get => _clienteSelecionado;
             set
             {
+                if (_clienteSelecionado == value)
+                    return;
+
                 _clienteSelecionado = value;
                 OnPropertyChanged();
 
-                if (!_isCarregandoEdicao)
-                    AtualizarDadosCliente();
+                if (value == null)
+                    return;
+
+                _isSelecionandoCliente = true;
+
+                TextoClienteDigitado = value.Nome;
+                ClienteEndereco = value.Endereco;
+                ClienteTelefone = value.Telefone;
+
+                OnPropertyChanged(nameof(ClienteEndereco));
+                OnPropertyChanged(nameof(ClienteTelefone));
+
+                _isSelecionandoCliente = false;
             }
         }
 
+        // ===============================
+        // TEXTO DIGITADO PELO USUÁRIO
+        // ===============================
         private string _textoClienteDigitado;
-        private bool _isSelecionandoCliente;
-        private bool _isCarregandoEdicao; 
-
         public string TextoClienteDigitado
         {
             get => _textoClienteDigitado;
@@ -41,16 +67,62 @@ namespace MecAppIN.ViewModels
                 _textoClienteDigitado = value;
                 OnPropertyChanged();
 
-                if (!_isSelecionandoCliente && !_isCarregandoEdicao)
-                    BuscarClientes();
+                // 🔒 NÃO EXECUTA DURANTE SELEÇÃO OU EDIÇÃO
+                if (_isSelecionandoCliente || _isCarregandoEdicao)
+                    return;
+
+                // 🔥 SE USUÁRIO DIGITOU OUTRO NOME, LIMPA CLIENTE
+                if (ClienteSelecionado != null &&
+                    !string.Equals(ClienteSelecionado.Nome, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    ClienteSelecionado = null;
+                    ClienteEndereco = string.Empty;
+                    ClienteTelefone = string.Empty;
+
+                    OnPropertyChanged(nameof(ClienteEndereco));
+                    OnPropertyChanged(nameof(ClienteTelefone));
+                }
+
+                BuscarClientes();
             }
         }
 
-        public string ClienteEndereco { get; set; }
-        public string ClienteTelefone { get; set; }
+        // ===============================
+        // ENDEREÇO
+        // ===============================
+        private string _clienteEndereco;
+        public string ClienteEndereco
+        {
+            get => _clienteEndereco;
+            set
+            {
+                if (_clienteEndereco == value)
+                    return;
+
+                _clienteEndereco = value;
+                OnPropertyChanged();
+            }
+        }
 
         // ===============================
-        // BUSCA
+        // TELEFONE
+        // ===============================
+        private string _clienteTelefone;
+        public string ClienteTelefone
+        {
+            get => _clienteTelefone;
+            set
+            {
+                if (_clienteTelefone == value)
+                    return;
+
+                _clienteTelefone = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // ===============================
+        // BUSCAR CLIENTES (AUTOCOMPLETE)
         // ===============================
         protected void BuscarClientes()
         {
@@ -73,27 +145,7 @@ namespace MecAppIN.ViewModels
         }
 
         // ===============================
-        // ATUALIZAR DADOS
-        // ===============================
-        protected void AtualizarDadosCliente()
-        {
-            if (ClienteSelecionado == null)
-                return;
-
-            _isSelecionandoCliente = true;
-
-            TextoClienteDigitado = ClienteSelecionado.Nome;
-            ClienteEndereco = ClienteSelecionado.Endereco;
-            ClienteTelefone = ClienteSelecionado.Telefone;
-
-            OnPropertyChanged(nameof(ClienteEndereco));
-            OnPropertyChanged(nameof(ClienteTelefone));
-
-            _isSelecionandoCliente = false;
-        }
-
-        // ===============================
-        // 🔥 MÉTODO PARA EDIÇÃO
+        // USAR EM MODO EDIÇÃO (OS / ORÇAMENTO)
         // ===============================
         protected void PreencherClienteEmModoEdicao(Clientes cliente)
         {

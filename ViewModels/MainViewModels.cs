@@ -90,7 +90,7 @@ namespace MecAppIN.ViewModels
         // ===============================
         public void AbrirEdicaoOrcamento(Orcamentos orcamento)
         {
-            TelaAtual = new OrcamentosViewModel(orcamento);
+            TelaAtual = new OrcamentosViewModel(orcamento.Id);
         }
 
         private void AtualizarHora()

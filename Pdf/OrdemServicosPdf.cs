@@ -211,7 +211,7 @@ public class OrdemServicoPdf : IDocument
             {
                 row.RelativeItem()
                     .Text("Assinatura do Cliente")
-                    .FontSize(9);
+                    .FontSize(15);
 
                 row.RelativeItem().AlignRight().Column(totais =>
                 {

@@ -100,24 +100,7 @@ namespace MecAppIN.ViewModels
             CarregarClientes();
         }
 
-        private void FiltrarClientes()
-        {
-            using var db = new AppDbContext();
-
-            Clientes.Clear();
-
-            var query = db.Clientes.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(TextoBusca))
-            {
-                query = query.Where(c =>
-                    c.Nome.Contains(TextoBusca));
-            }
-
-            foreach (var cliente in query)
-                Clientes.Add(cliente);
-        }
-
+    
 
         private void CarregarClientes()
         {
