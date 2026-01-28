@@ -9,9 +9,14 @@ namespace MecAppIN.Models
 
         public int? ClienteId { get; set; }
         public string ClienteNome { get; set; }
+        public string ClienteTelefone { get; set; } = string.Empty;
+        public string ClienteEndereco { get; set; } = string.Empty;
 
         public string Veiculo { get; set; }
         public string Placa { get; set; }
+
+        public string TipoMotor { get; set; }
+
 
         public decimal Total { get; set; }
 

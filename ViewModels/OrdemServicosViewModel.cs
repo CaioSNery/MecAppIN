@@ -372,7 +372,7 @@ namespace MecAppIN.ViewModels
 
                 OnPropertyChanged(nameof(TotalGeral));
 
-                // 🔥 AVISA O BOTÃO
+                
                 (SalvarComoOrcamentoCommand as RelayCommand)
                     ?.RaiseCanExecuteChanged();
             };
@@ -388,8 +388,6 @@ namespace MecAppIN.ViewModels
                 OnPropertyChanged(nameof(TotalServicos));
                 OnPropertyChanged(nameof(TotalPecas));
                 OnPropertyChanged(nameof(TotalGeral));
-
-                // 🔥 ATUALIZA O BOTÃO
                 (SalvarComoOrcamentoCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
@@ -899,7 +897,10 @@ namespace MecAppIN.ViewModels
                     : TextoClienteDigitado,
                 Veiculo = Veiculo,
                 Placa = Placa,
+                ClienteEndereco=ClienteSelecionado.Endereco,
+                ClienteTelefone=ClienteSelecionado.Telefone,
                 Total = TotalGeral,
+                TipoMotor=TipoMotorSelecionado,
                 NumeroOs = 0,
                 Itens = itensTela.Select(i => new ItemOrcamento
                 {

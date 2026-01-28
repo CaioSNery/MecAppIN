@@ -3,9 +3,7 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using MecAppIN.Models;
 using MecAppIN.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 
 namespace MecAppIN.Pdf
 {
@@ -50,7 +48,7 @@ namespace MecAppIN.Pdf
                 col.Item().PaddingTop(10).Row(row =>
                 {
                     row.RelativeItem()
-                        .Text("ORÇAMENTO")
+                        .Text($"ORÇAMENTO    Motor: {_orcamento.TipoMotor}")
                         .Bold();
 
                     row.RelativeItem().AlignRight()
@@ -68,7 +66,15 @@ namespace MecAppIN.Pdf
         {
             container.PaddingTop(10).Column(col =>
             {
-                col.Item().Text($"Cliente: {_orcamento.ClienteNome}");
+                var endereco = string.IsNullOrWhiteSpace(_orcamento.ClienteEndereco)
+                ? "Bahia"
+                : _orcamento.ClienteEndereco;
+                var telefone = string.IsNullOrWhiteSpace(_orcamento.ClienteTelefone)
+                ? "-"
+                : _orcamento.ClienteTelefone;
+
+                col.Item().Text($"Cliente: {_orcamento.ClienteNome}      Telefone: {telefone}    Endereço: {endereco}");
+
                 col.Item().Text($"Veículo: {_orcamento.Veiculo}    Placa: {_orcamento.Placa}");
 
                 ImprimirBloco(col, EBlocoMotor.Biela, "BIELA");

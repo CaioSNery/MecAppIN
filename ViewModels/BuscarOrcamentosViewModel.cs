@@ -98,7 +98,7 @@ namespace MecAppIN.ViewModels
 
             EditarCommand = new RelayCommand(Editar, PodeExecutar);
             ExcluirCommand = new RelayCommand(Excluir, PodeExecutar);
-            CriarOrdemServicoCommand = new RelayCommand(CriarOrdemServico, PodeExecutar);
+            CriarOrdemServicoCommand = new RelayCommand(ConfirmarCriacaoOs, PodeExecutar);
             AbrirPdfCommand = new RelayCommand(AbrirPdf, PodeExecutar);
             ImprimirCommand = new RelayCommand(ImprimirOrcamento, PodeExecutar);
 
@@ -237,6 +237,23 @@ namespace MecAppIN.ViewModels
             }
         }
 
+        private void ConfirmarCriacaoOs()
+        {
+            var resultado = MessageBox.Show(
+                $"Deseja criar uma Ordem de Serviço a partir do Orçamento #{OrcamentoSelecionado.Id}?\n\n" +
+                "O orçamento será removido após a criação da OS.",
+                "Confirmar criação de OS",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (resultado != MessageBoxResult.Yes)
+                return;
+
+            CriarOrdemServico();
+        }
+
+
 
         private void CriarOrdemServico()
         {
@@ -245,7 +262,15 @@ namespace MecAppIN.ViewModels
 
             _todosOrcamentos.Remove(OrcamentoSelecionado);
             Filtrar();
+
+            MessageBox.Show(
+                "Ordem de Serviço criada com sucesso!",
+                "Sucesso",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
         }
+
 
         private void AbrirPdf()
         {
