@@ -237,7 +237,7 @@ namespace MecAppIN.ViewModels
                     return;
                 }
 
-                os.DataPagamento = DateTime.Now; // ✅ SÓ ISSO
+                os.DataPagamento = DateTime.Now;
             }
 
             // ===============================
@@ -258,7 +258,7 @@ namespace MecAppIN.ViewModels
                     return;
                 }
 
-                os.DataPagamento = null; // ✅ LIMPA DATA
+                os.DataPagamento = null; //  LIMPA DATA
             }
 
             SalvarPagoNoBanco(os);
@@ -287,7 +287,7 @@ namespace MecAppIN.ViewModels
 
             db.SaveChanges();
 
-            // 🔥 REGERA O PDF COM STATUS ATUALIZADO
+            //  REGERA O PDF COM STATUS ATUALIZADO
             GerarPdfOsAtualizado(entidade);
 
             _todasOrdens = db.OrdemServicos
@@ -390,7 +390,7 @@ namespace MecAppIN.ViewModels
             try
             {
 
-                var caminhoPdf = ObterCaminhoPdf(OrdemSelecionada);
+                var caminhoPdf = PdfPathHelper.ObterCaminhoOs(OrdemSelecionada);
 
                 if (File.Exists(caminhoPdf))
                 {
@@ -431,18 +431,6 @@ namespace MecAppIN.ViewModels
         // REIMPRIMIR
         // ===============================
 
-        private string ObterCaminhoPdf(OrdemServicos os)
-        {
-            return Path.Combine(
-                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
-                "PDFs",
-                "OrdensDeServico",
-                os.Data.Year.ToString(),
-                os.Data.Month.ToString("D2"),
-                $"OS_{os.Id}.pdf"
-            );
-        }
-
 
 
         private void Reimprimir()
@@ -450,11 +438,22 @@ namespace MecAppIN.ViewModels
             if (OrdemSelecionada == null)
                 return;
 
-            var caminhoPdf = ObterCaminhoPdf(OrdemSelecionada);
+            var caminhoPdf = PdfPathHelper.ObterCaminhoOs(OrdemSelecionada);
+
+            if (!File.Exists(caminhoPdf))
+            {
+                MessageBox.Show(
+                    "PDF não encontrado para esta OS.",
+                    "PDF",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
 
             PdfService.ImprimirPdfSeguro(caminhoPdf);
-
         }
+
 
 
     }

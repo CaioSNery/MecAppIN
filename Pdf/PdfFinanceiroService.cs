@@ -1,5 +1,6 @@
-using System.IO;
+
 using MecAppIN.Enums;
+using MecAppIN.Helpers;
 using MecAppIN.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -10,17 +11,7 @@ namespace MecAppIN.Pdf
     {
         public static void GerarPdfDiario(DateTime data, List<LancamentoFinanceiro> lancamentos)
         {
-            var basePath = Path.Combine(
-                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
-                "PDFs",
-                "Financeiro",
-                data.Year.ToString(),
-                data.ToString("MM-yyyy")
-            );
-
-            Directory.CreateDirectory(basePath);
-
-            var arquivo = Path.Combine(basePath, $"{data:yyyy-MM-dd}.pdf");
+            var arquivo = PdfPathHelper.ObterCaminhoFinanceiro(data);
 
             var entradas = lancamentos.Where(l => l.Tipo == ETipoPagamento.Entrada).ToList();
             var saidas = lancamentos.Where(l => l.Tipo == ETipoPagamento.Saida).ToList();
@@ -29,122 +20,119 @@ namespace MecAppIN.Pdf
             var totalSaidas = saidas.Sum(l => l.Valor);
             var totalFinal = totalEntradas - totalSaidas;
 
-
             Document.Create(container =>
             {
                 container.Page(page =>
                 {
                     page.Margin(30);
 
-                    // =====================
-                    // CABEÇALHO
-                    // =====================
                     page.Header()
                         .Text($"Financeiro - {data:dd/MM/yyyy}")
                         .FontSize(18)
                         .Bold()
                         .AlignCenter();
 
+
                     page.Content().PaddingTop(20).Row(row =>
 {
     // =====================
     // ENTRADAS (ESQUERDA)
     // =====================
-    row.RelativeItem().Column(col =>
-    {
-        col.Item()
-            .Text("ENTRADAS")
-            .FontSize(14)
-            .Bold()
-            .FontColor(Colors.Green.Darken2);
-
-        col.Item().PaddingTop(5).Table(t =>
+        row.RelativeItem().Column(col =>
         {
-            t.ColumnsDefinition(c =>
+            col.Item()
+                .Text("ENTRADAS")
+                .FontSize(14)
+                .Bold()
+                .FontColor(Colors.Green.Darken2);
+
+            col.Item().PaddingTop(5).Table(t =>
             {
-                c.ConstantColumn(50);   // Hora
-                c.RelativeColumn();     // Descrição
-                c.ConstantColumn(70);   // Forma
-                c.ConstantColumn(80);   // Valor
+                t.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(50);   // Hora
+                    c.RelativeColumn();     // Descrição
+                    c.ConstantColumn(70);   // Forma
+                    c.ConstantColumn(80);   // Valor
+                });
+
+                t.Header(h =>
+                {
+                    h.Cell().Text("Hora").Bold();
+                    h.Cell().Text("Descrição").Bold();
+                    h.Cell().Text("Forma").Bold();
+                    h.Cell().AlignRight().Text("Valor").Bold();
+                });
+
+                foreach (var e in entradas)
+                {
+                    t.Cell().Text(e.Data.ToString("HH:mm"));
+                    t.Cell().Text(e.Descricao);
+                    t.Cell().Text(e.Forma.ToString());
+                    t.Cell().AlignRight().Text(e.Valor.ToString("C"));
+                }
+
+                t.Cell().ColumnSpan(3)
+                    .AlignRight()
+                    .Text("TOTAL ENTRADAS")
+                    .Bold();
+
+                t.Cell().AlignRight()
+                    .Text(totalEntradas.ToString("C"))
+                    .Bold();
             });
-
-            t.Header(h =>
-            {
-                h.Cell().Text("Hora").Bold();
-                h.Cell().Text("Descrição").Bold();
-                h.Cell().Text("Forma").Bold();
-                h.Cell().AlignRight().Text("Valor").Bold();
-            });
-
-            foreach (var e in entradas)
-            {
-                t.Cell().Text(e.Data.ToString("HH:mm"));
-                t.Cell().Text(e.Descricao);
-                t.Cell().Text(e.Forma.ToString());
-                t.Cell().AlignRight().Text(e.Valor.ToString("C"));
-            }
-
-            t.Cell().ColumnSpan(3)
-                .AlignRight()
-                .Text("TOTAL ENTRADAS")
-                .Bold();
-
-            t.Cell().AlignRight()
-                .Text(totalEntradas.ToString("C"))
-                .Bold();
         });
-    });
 
-    row.ConstantItem(20); // espaço central
+        row.ConstantItem(20); // espaço central
 
     // =====================
     // SAÍDAS (DIREITA)
     // =====================
-    row.RelativeItem().Column(col =>
-    {
-        col.Item()
-            .Text("SAÍDAS")
-            .FontSize(14)
-            .Bold()
-            .FontColor(Colors.Red.Darken2);
-
-        col.Item().PaddingTop(5).Table(t =>
+        row.RelativeItem().Column(col =>
         {
-            t.ColumnsDefinition(c =>
+            col.Item()
+                .Text("SAÍDAS")
+                .FontSize(14)
+                .Bold()
+                .FontColor(Colors.Red.Darken2);
+
+            col.Item().PaddingTop(5).Table(t =>
             {
-                c.ConstantColumn(50);   // Hora
-                c.RelativeColumn();     // Descrição
-                c.ConstantColumn(70);   // Forma
-                c.ConstantColumn(80);   // Valor
+                t.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(50);   // Hora
+                    c.RelativeColumn();     // Descrição
+                    c.ConstantColumn(70);   // Forma
+                    c.ConstantColumn(80);   // Valor
+                });
+
+                t.Header(h =>
+                {
+                    h.Cell().Text("Hora").Bold();
+                    h.Cell().Text("Descrição").Bold();
+                    h.Cell().Text("Forma").Bold();
+                    h.Cell().AlignRight().Text("Valor").Bold();
+                });
+
+                foreach (var s in saidas)
+                {
+                    t.Cell().Text(s.Data.ToString("HH:mm"));
+                    t.Cell().Text(s.Descricao);
+                    t.Cell().Text(s.Forma.ToString());
+                    t.Cell().AlignRight().Text(s.Valor.ToString("C"));
+                }
+
+                t.Cell().ColumnSpan(3)
+                    .AlignRight()
+                    .Text("TOTAL SAÍDAS")
+                    .Bold();
+
+                t.Cell().AlignRight()
+                    .Text(totalSaidas.ToString("C"))
+                    .Bold();
             });
-
-            t.Header(h =>
-            {
-                h.Cell().Text("Hora").Bold();
-                h.Cell().Text("Descrição").Bold();
-                h.Cell().Text("Forma").Bold();
-                h.Cell().AlignRight().Text("Valor").Bold();
-            });
-
-            foreach (var s in saidas)
-            {
-                t.Cell().Text(s.Data.ToString("HH:mm"));
-                t.Cell().Text(s.Descricao);
-                t.Cell().Text(s.Forma.ToString());
-                t.Cell().AlignRight().Text(s.Valor.ToString("C"));
-            }
-
-            t.Cell().ColumnSpan(3)
-                .AlignRight()
-                .Text("TOTAL SAÍDAS")
-                .Bold();
-
-            t.Cell().AlignRight()
-                .Text(totalSaidas.ToString("C"))
-                .Bold();
         });
     });
-});
 
 
 
@@ -152,11 +140,11 @@ namespace MecAppIN.Pdf
                     // RODAPÉ
                     // =====================
                     page.Footer()
-         .PaddingTop(20)
-         .AlignRight()
-         .Text($"RESULTADO DO DIA: {totalFinal:C}")
-         .FontSize(16)
-         .Bold();
+     .PaddingTop(20)
+     .AlignRight()
+     .Text($"RESULTADO DO DIA: {totalFinal:C}")
+     .FontSize(16)
+     .Bold();
 
 
                 });
