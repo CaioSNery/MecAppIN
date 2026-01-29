@@ -1,5 +1,6 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
+using MecAppIN.Helpers;
 using MecAppIN.Models;
 using MecAppIN.Pdfs;
 using MecAppIN.Services;
@@ -273,12 +274,15 @@ namespace MecAppIN.ViewModels
 
         private void AbrirPdf()
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = ObterCaminhoPdf(OrcamentoSelecionado),
-                UseShellExecute = true
-            });
+            using var db = new AppDbContext();
+
+            var atualizado = db.Orcamentos.First(o => o.Id == OrcamentoSelecionado.Id);
+            var caminho = PdfPathHelper.ObterCaminhoOrcamento(atualizado);
+            PdfService.AbrirPdf(caminho);
+
+            
         }
+
 
         private string ObterCaminhoPdf(Orcamentos o)
         {
@@ -303,7 +307,7 @@ namespace MecAppIN.ViewModels
 
         }
 
-       
+
 
 
         // ===============================

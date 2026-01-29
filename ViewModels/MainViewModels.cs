@@ -88,10 +88,6 @@ namespace MecAppIN.ViewModels
         // ===============================
         // MÉTODOS AUXILIARES
         // ===============================
-        public void AbrirEdicaoOrcamento(Orcamentos orcamento)
-        {
-            TelaAtual = new OrcamentosViewModel(orcamento.Id);
-        }
 
         private void AtualizarHora()
         {

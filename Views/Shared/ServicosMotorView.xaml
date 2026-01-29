@@ -32,7 +32,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="ServicosBiela_AddingNewItem">
+                                  AddingNewItem="ServicosBiela_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -50,7 +51,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="PecasBiela_AddingNewItem">
+                                  AddingNewItem="PecasBiela_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -75,7 +77,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="ServicosBloco_AddingNewItem">
+                                  AddingNewItem="ServicosBloco_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -92,7 +95,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="PecasBloco_AddingNewItem">
+                                  AddingNewItem="PecasBloco_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -117,7 +121,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="ServicosCabecote_AddingNewItem">
+                                  AddingNewItem="ServicosCabecote_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -134,7 +139,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="PecasCabeCote_AddingNewItem">
+                                  AddingNewItem="PecasCabeCote_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -159,7 +165,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="ServicosEixo_AddingNewItem">
+                                  AddingNewItem="ServicosEixo_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>
@@ -176,7 +183,8 @@
                                   CanUserDeleteRows="True"
                                   Height="150"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  AddingNewItem="PecasEixo_AddingNewItem">
+                                  AddingNewItem="PecasEixo_AddingNewItem"
+                                  PreviewKeyDown="DataGrid_PreviewKeyDown">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Qtde" Binding="{Binding Quantidade}" Width="60"/>

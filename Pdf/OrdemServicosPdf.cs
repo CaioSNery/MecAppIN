@@ -47,13 +47,44 @@ public class OrdemServicoPdf : IDocument
             col.Item().Text("Telefone: (71)3252-6963/98722-0776");
 
             col.Item().PaddingTop(10).Row(row =>
- {
-     row.RelativeItem()
-         .Text($"OS Nº: {_os.Id}  |  Motor: {_os.TipoMotor}");
+{
+    // ESQUERDA
+    row.RelativeItem().Column(left =>
+    {
+        left.Item()
+            .Text($"OS Nº: {_os.Id}  |  Motor: {_os.TipoMotor}");
 
-     row.RelativeItem().AlignRight()
-         .Text($"Data: {_os.Data:dd/MM/yyyy}");
- });
+        // 🔰 SELO DE OS PAGA
+        if (_os.Pago)
+        {
+            left.Item()
+                .PaddingTop(4)
+                .Background(Colors.Green.Lighten3)
+                .Padding(4)
+                .AlignLeft()
+                .Text("OS PAGA")
+                .Bold()
+                .FontSize(10)
+                .FontColor(Colors.Green.Darken3);
+        }
+    });
+
+    // DIREITA (DATAS)
+    row.RelativeItem().AlignRight().Column(colData =>
+    {
+        colData.Item()
+            .Text($"Data da OS: {_os.Data:dd/MM/yyyy}");
+
+        if (_os.DataPagamento.HasValue)
+        {
+            colData.Item()
+                .Text($"Pagamento em: {_os.DataPagamento:dd/MM/yyyy}")
+                .FontSize(9)
+                .Bold();
+        }
+    });
+});
+
 
 
             col.Item().LineHorizontal(1);
@@ -70,11 +101,11 @@ public class OrdemServicoPdf : IDocument
             var endereco = string.IsNullOrWhiteSpace(_os.ClienteEndereco)
                 ? "Bahia"
                 : _os.ClienteEndereco;
-                var telefone = string.IsNullOrWhiteSpace(_os.ClienteTelefone)
-                ? "-"
-                : _os.ClienteTelefone;
+            var telefone = string.IsNullOrWhiteSpace(_os.ClienteTelefone)
+            ? "-"
+            : _os.ClienteTelefone;
 
-            col.Item().Text($"Cliente: {_os.ClienteNome}      Telefone: {telefone}    Endereço: {endereco}");     
+            col.Item().Text($"Cliente: {_os.ClienteNome}      Telefone: {telefone}    Endereço: {endereco}");
 
             col.Item().Text($"Veículo: {_os.Veiculo}    Placa: {_os.Placa}");
 
@@ -207,29 +238,40 @@ public class OrdemServicoPdf : IDocument
         {
             col.Item().LineHorizontal(1);
 
-            col.Item().PaddingTop(10).Row(row =>
-            {
-                row.RelativeItem()
-                    .Text("Assinatura do Cliente")
-                    .FontSize(15);
+            // ===============================
+            // ASSINATURA CENTRAL (LARGURA TOTAL)
+            // ===============================
+            col.Item()
+                .PaddingTop(25)
+                .AlignCenter()
+                .Text("Assinatura do Cliente")
+                .FontSize(16)
+                .Bold();
 
-                row.RelativeItem().AlignRight().Column(totais =>
+            // ===============================
+            // TOTAIS (ALINHADOS À DIREITA)
+            // ===============================
+            col.Item()
+                .PaddingTop(10)
+                .AlignRight()
+                .Column(totais =>
                 {
-                    totais.Item().Text($"Total Serviços: {totalServicos:C}")
+                    totais.Item()
+                        .Text($"Total Serviços: {totalServicos:C}")
                         .FontSize(9)
                         .Bold();
 
-                    totais.Item().Text($"Total Peças: {totalPecas:C}")
+                    totais.Item()
+                        .Text($"Total Peças: {totalPecas:C}")
                         .FontSize(9)
                         .Bold();
 
-                    totais.Item().Text($"TOTAL GERAL: {_os.Total:C}")
+                    totais.Item()
+                        .Text($"TOTAL GERAL: {_os.Total:C}")
                         .FontSize(10)
                         .Bold();
                 });
-            });
         });
     }
-
 
 }

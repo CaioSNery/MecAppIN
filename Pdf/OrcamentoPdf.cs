@@ -144,7 +144,7 @@ namespace MecAppIN.Pdf
                 {
                     c.ConstantColumn(40);   // Qtde
                     c.RelativeColumn();     // Descrição
-                    c.ConstantColumn(70);   // Valor
+                    c.ConstantColumn(70);   // Valor TOTAL
                 });
 
                 table.Header(h =>
@@ -157,7 +157,7 @@ namespace MecAppIN.Pdf
 
                     h.Cell().Text("Qtde").Bold();
                     h.Cell().Text("Descrição").Bold();
-                    h.Cell().AlignRight().Text("Valor").Bold();
+                    h.Cell().AlignRight().Text("Total").Bold();
                 });
 
                 foreach (var item in itens)
@@ -165,13 +165,24 @@ namespace MecAppIN.Pdf
                     table.Cell().Text(item.Quantidade.ToString());
                     table.Cell().Text(item.Servico);
 
-                    table.Cell().AlignRight()
-                        .Text(item.ValorUnitario > 0
-                            ? item.ValorUnitario.ToString("C")
-                            : "");
+                    string valorTexto;
+
+                    if (item.IsPeca)
+                    {
+                        valorTexto = item.ValorUnitario > 0
+                            ? item.Total.ToString("C")
+                            : "";
+                    }
+                    else
+                    {
+                        valorTexto = item.Total.ToString("C");
+                    }
+
+                    table.Cell().AlignRight().Text(valorTexto);
                 }
             });
         }
+
 
         // ===============================
         // RODAPÉ

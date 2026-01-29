@@ -5,6 +5,8 @@ using MecAppIN.Models;
 using System.Windows;
 using System.Windows.Input;
 using MecAppIN.ViewModels;
+using MecAppIN.Helpers;
+using Microsoft.VisualBasic;
 
 namespace MecAppIN.Views
 {
@@ -18,13 +20,31 @@ namespace MecAppIN.Views
 
         private void AbrirConsulta_Click(object sender, RoutedEventArgs e)
         {
-            var janela = new ConsultaFinanceiroWindow
+            var popup = new PasswordPromptWindow
             {
-                Owner = Application.Current.MainWindow
+                Owner = Window.GetWindow(this)
             };
 
+            if (popup.ShowDialog() != true)
+                return;
+
+            if (!FinanceiroSenhaHelper.Validar(popup.SenhaDigitada))
+            {
+                MessageBox.Show(
+                    "Senha incorreta.",
+                    "Acesso negado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            // ✅ SENHA OK → ABRE A CONSULTA
+            var janela = new ConsultaFinanceiroWindow();
             janela.ShowDialog();
         }
+
+
 
 
 

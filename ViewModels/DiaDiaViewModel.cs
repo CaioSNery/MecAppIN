@@ -141,7 +141,7 @@ namespace MecAppIN.ViewModels
             Lancamentos.Where(l => l.Forma == ETipoFormaDePagamento.Cartao).Sum(l => l.Valor);
 
         public IEnumerable<LancamentoFinanceiro> Entradas =>
-Lancamentos.Where(l => l.Tipo == ETipoPagamento.Entrada);
+        Lancamentos.Where(l => l.Tipo == ETipoPagamento.Entrada);
 
         public IEnumerable<LancamentoFinanceiro> Saidas =>
             Lancamentos.Where(l => l.Tipo == ETipoPagamento.Saida);

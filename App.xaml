@@ -11,6 +11,8 @@
     <!-- ===================== -->
     <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
     <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    <conv:DataPagamentoTooltipConverter x:Key="DataPagamentoTooltipConverter"/>
+
 
     <!-- ===================== -->
     <!-- BOTÃO VERDE (GLOBAL) -->

@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows.Input;
 using MecAppIN.Enums;
 
 namespace MecAppIN.Views.Shared
@@ -117,6 +118,39 @@ namespace MecAppIN.Views.Shared
                 IsPeca = true,
                 Quantidade = 1
             };
+        }
+
+        private void DataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Down && e.Key != Key.Enter)
+                return;
+
+            var grid = sender as DataGrid;
+            if (grid == null)
+                return;
+
+            // Se estiver editando
+            if (grid.CurrentCell != null)
+            {
+                // Finaliza edição da célula atual
+                grid.CommitEdit(DataGridEditingUnit.Cell, true);
+                grid.CommitEdit(DataGridEditingUnit.Row, true);
+
+                int rowIndex = grid.Items.IndexOf(grid.CurrentItem);
+
+                // Vai para a próxima linha, se existir
+                if (rowIndex < grid.Items.Count - 1)
+                {
+                    grid.SelectedIndex = rowIndex + 1;
+                    grid.CurrentCell = new DataGridCellInfo(
+                        grid.Items[rowIndex + 1],
+                        grid.Columns[0] // volta sempre para a coluna Quantidade
+                    );
+
+                    grid.BeginEdit();
+                    e.Handled = true;
+                }
+            }
         }
 
     }

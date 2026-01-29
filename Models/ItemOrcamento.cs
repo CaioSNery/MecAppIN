@@ -1,6 +1,6 @@
-using MecAppIN.Enums;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using MecAppIN.Enums;
 
 namespace MecAppIN.Models
 {
@@ -33,6 +33,7 @@ namespace MecAppIN.Models
             {
                 _quantidade = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(Total));
             }
         }
 
@@ -44,8 +45,12 @@ namespace MecAppIN.Models
             {
                 _valorUnitario = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(Total));
             }
         }
+
+        
+        public decimal Total => Quantidade * ValorUnitario;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string prop = null)

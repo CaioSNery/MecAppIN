@@ -1,18 +1,16 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Enums;
+using MecAppIN.Helpers;
 using MecAppIN.Pdfs;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Xps.Packaging;
 
 namespace MecAppIN.ViewModels
 {
@@ -120,16 +118,16 @@ namespace MecAppIN.ViewModels
             Ordens = new ObservableCollection<OrdemServicos>();
             Carregar();
 
-            ReimprimirCommand = new RelayCommand(Reimprimir, PodeExecutar);
-            ExcluirCommand = new RelayCommand(Excluir, PodeExecutar);
-            EditarCommand = new RelayCommand(Editar, PodeExecutar);
+            ReimprimirCommand = new RelayCommand(Reimprimir, PodeReimprimir);
+            ExcluirCommand = new RelayCommand(Excluir, PodeEditarOuExcluir);
+            EditarCommand = new RelayCommand(Editar, PodeEditarOuExcluir);
             ProximaPaginaCommand = new RelayCommand(ProximaPagina);
             PaginaAnteriorCommand = new RelayCommand(PaginaAnterior);
             MostrarPagasCommand = new RelayCommand(() =>
- {
-     PaginaAtual = 1;
-     FiltroPagamento = EFiltroPagamento.Pagas;
- });
+            {
+                PaginaAtual = 1;
+                FiltroPagamento = EFiltroPagamento.Pagas;
+            });
 
             MostrarNaoPagasCommand = new RelayCommand(() =>
             {
@@ -165,10 +163,16 @@ namespace MecAppIN.ViewModels
 
 
 
-        private bool PodeExecutar()
+        private bool PodeEditarOuExcluir()
+        {
+            return OrdemSelecionada != null && !OrdemSelecionada.Pago;
+        }
+
+        private bool PodeReimprimir()
         {
             return OrdemSelecionada != null;
         }
+
 
         private void AtualizarBotoes()
         {
@@ -198,10 +202,14 @@ namespace MecAppIN.ViewModels
         {
             foreach (var os in ordens)
             {
+                os.PagoAnterior = os.Pago;
                 os.PropertyChanged -= Ordem_PropertyChanged;
                 os.PropertyChanged += Ordem_PropertyChanged;
             }
         }
+
+
+
         private void Ordem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(OrdemServicos.Pago))
@@ -211,23 +219,77 @@ namespace MecAppIN.ViewModels
             if (os == null)
                 return;
 
+            // ===============================
+            // MARCAR COMO PAGA
+            // ===============================
+            if (os.Pago && !os.PagoAnterior)
+            {
+                var resultado = MessageBox.Show(
+                    $"Deseja marcar a OS #{os.Id} como PAGA?",
+                    "Confirmar pagamento",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+
+                if (resultado != MessageBoxResult.Yes)
+                {
+                    os.Pago = os.PagoAnterior;
+                    return;
+                }
+
+                os.DataPagamento = DateTime.Now; // ✅ SÓ ISSO
+            }
+
+            // ===============================
+            // ESTORNAR PAGAMENTO
+            // ===============================
+            if (!os.Pago && os.PagoAnterior)
+            {
+                var resultado = MessageBox.Show(
+                    $"Deseja ESTORNAR o pagamento da OS #{os.Id}?",
+                    "Confirmar estorno",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (resultado != MessageBoxResult.Yes)
+                {
+                    os.Pago = os.PagoAnterior;
+                    return;
+                }
+
+                os.DataPagamento = null; // ✅ LIMPA DATA
+            }
+
             SalvarPagoNoBanco(os);
+
+            os.PagoAnterior = os.Pago;
+
             PaginaAtual = 1;
             Filtrar();
-
-
+            AtualizarBotoes();
         }
+
+
+
+
 
         private void SalvarPagoNoBanco(OrdemServicos os)
         {
             using var db = new AppDbContext();
 
-            var entidade = db.OrdemServicos.First(o => o.Id == os.Id);
+            var entidade = db.OrdemServicos
+                .Include(o => o.Itens)
+                .First(o => o.Id == os.Id);
+
             entidade.Pago = os.Pago;
+            entidade.DataPagamento = os.DataPagamento;
 
             db.SaveChanges();
 
-            
+            // 🔥 REGERA O PDF COM STATUS ATUALIZADO
+            GerarPdfOsAtualizado(entidade);
+
             _todasOrdens = db.OrdemServicos
                 .Include(o => o.Itens)
                 .OrderByDescending(o => o.Data)
@@ -236,7 +298,27 @@ namespace MecAppIN.ViewModels
             RegistrarEventos(_todasOrdens);
         }
 
-        
+        private void GerarPdfOsAtualizado(OrdemServicos os)
+        {
+            var caminho = PdfPathHelper.ObterCaminhoOs(os);
+
+            // garante pasta
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho)!);
+
+            // apaga o PDF antigo
+            if (File.Exists(caminho))
+                File.Delete(caminho);
+
+            // gera novamente (agora com OS.Pago = true)
+            var pdf = new OrdemServicoPdf(os);
+            pdf.GeneratePdf(caminho);
+        }
+
+
+
+
+
+
 
         // ===============================
         // FILTRAR (DINÂMICO)
@@ -266,8 +348,8 @@ namespace MecAppIN.ViewModels
 
 
             TotalPaginas = (int)Math.Ceiling(
-    filtradas.Count / (double)TamanhoPagina
-);
+            filtradas.Count / (double)TamanhoPagina
+            );
 
             if (PaginaAtual > TotalPaginas && TotalPaginas > 0)
                 PaginaAtual = TotalPaginas;
@@ -361,7 +443,7 @@ namespace MecAppIN.ViewModels
             );
         }
 
-       
+
 
         private void Reimprimir()
         {

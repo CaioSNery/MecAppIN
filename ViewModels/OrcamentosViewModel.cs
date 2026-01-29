@@ -1,6 +1,7 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Enums;
+using MecAppIN.Helpers;
 using MecAppIN.Models;
 using MecAppIN.Pdf;
 using MecAppIN.Services;
@@ -34,8 +35,6 @@ namespace MecAppIN.ViewModels
             set { _placa = value; OnPropertyChanged(); }
         }
 
-        public DateTime DataOrcamento { get; set; } = DateTime.Now;
-
         // ===============================
         // MOTOR
         // ===============================
@@ -50,7 +49,7 @@ namespace MecAppIN.ViewModels
         }
 
         // ===============================
-        // ITENS
+        // SERVIÇOS
         // ===============================
         public ObservableCollection<ItemOrdemServico> ItensBiela { get; } = new();
         public ObservableCollection<ItemOrdemServico> ItensBloco { get; } = new();
@@ -58,6 +57,9 @@ namespace MecAppIN.ViewModels
         public ObservableCollection<ItemOrdemServico> ItensEixo { get; } = new();
         public ObservableCollection<ItemOrdemServico> ItensMotor { get; } = new();
 
+        // ===============================
+        // PEÇAS
+        // ===============================
         public ObservableCollection<ItemOrdemServico> PecasBiela { get; } = new();
         public ObservableCollection<ItemOrdemServico> PecasBloco { get; } = new();
         public ObservableCollection<ItemOrdemServico> PecasCabecote { get; } = new();
@@ -91,11 +93,14 @@ namespace MecAppIN.ViewModels
         public ICommand ConverterParaOsCommand { get; }
 
         // ===============================
-        // CONSTRUTOR NOVO
+        // CONSTRUTOR 
         // ===============================
         public OrcamentosViewModel()
         {
-            Clientes = new ObservableCollection<Clientes>();
+            using var db = new AppDbContext();
+            Clientes = new ObservableCollection<Clientes>(db.Clientes.ToList());
+
+            CarregarServicosPadrao();
 
             SalvarOrcamentoCommand = new RelayCommand(SalvarOrcamento, PodeSalvar);
             AtualizarOrcamentoCommand = new RelayCommand(AtualizarOrcamento, () => Editando);
@@ -115,17 +120,14 @@ namespace MecAppIN.ViewModels
 
             _orcamentoId = orcamento.Id;
 
-            _isCarregandoEdicao = true;
-
-            TipoMotorSelecionado = orcamento.TipoMotor;
             Veiculo = orcamento.Veiculo;
             Placa = orcamento.Placa;
+            TipoMotorSelecionado = orcamento.TipoMotor;
 
             if (orcamento.ClienteId.HasValue)
             {
-                var cliente = db.Clientes.FirstOrDefault(c => c.Id == orcamento.ClienteId);
-                if (cliente != null)
-                    PreencherClienteEmModoEdicao(cliente);
+                ClienteSelecionado = db.Clientes
+                    .First(c => c.Id == orcamento.ClienteId.Value);
             }
             else
             {
@@ -134,165 +136,95 @@ namespace MecAppIN.ViewModels
                 ClienteTelefone = orcamento.ClienteTelefone;
             }
 
-            LimparColecoes();
+            AplicarItensDoBanco(orcamento);
+        }
 
+        // ===============================
+        // SERVIÇOS PADRÃO
+        // ===============================
+        private void CarregarServicosPadrao()
+        {
+            CarregarItensBiela();
+            CarregarItensBloco();
+            CarregarItensCabecote();
+            CarregarItensEixo();
+            CarregarItensMotor();
+        }
+
+        private void CarregarItensBiela()
+        {
+            ItensBiela.Clear();
+            foreach (var item in ItensMotorPadraoHelper.CriarItensBiela())
+                ItensBiela.Add(item);
+        }
+
+        private void CarregarItensBloco()
+        {
+            ItensBloco.Clear();
+            foreach (var item in ItensMotorPadraoHelper.CriarItensBloco())
+                ItensBloco.Add(item);
+        }
+
+        public void CarregarItensCabecote()
+        {
+            ItensCabecote.Clear();
+            foreach (var item in ItensMotorPadraoHelper.CriarItensCabecote())
+                ItensCabecote.Add(item);
+        }
+
+        public void CarregarItensEixo()
+        {
+            ItensEixo.Clear();
+            foreach (var item in ItensMotorPadraoHelper.CriarItensEixo())
+                ItensEixo.Add(item);
+        }
+
+        public void CarregarItensMotor()
+        {
+            ItensMotor.Clear();
+            foreach (var item in ItensMotorPadraoHelper.CriarItensMotor())
+                ItensMotor.Add(item);
+        }
+
+
+        // ===============================
+        // APLICAR ITENS
+        // ===============================
+        private void AplicarItensDoBanco(Orcamentos orcamento)
+        {
             foreach (var item in orcamento.Itens)
             {
-                var novo = new ItemOrdemServico
+                if (item.IsPeca)
                 {
-                    Servico = item.Servico,
-                    Quantidade = item.Quantidade,
-                    ValorUnitario = item.ValorUnitario,
-                    Bloco = item.Bloco,
-                    IsPeca = item.IsPeca,
-                    ValorEditavel = true
-                };
+                    AdicionarPeca(new ItemOrdemServico
+                    {
+                        Bloco = item.Bloco,
+                        Servico = item.Servico,
+                        Quantidade = item.Quantidade,
+                        ValorUnitario = item.ValorUnitario,
+                        IsPeca = true
+                    });
+                    continue;
+                }
 
-                if (novo.IsPeca)
-                    AdicionarPeca(novo);
-                else
-                    AdicionarServico(novo);
+                var lista = ObterListaServicos(item.Bloco);
+                var servico = lista.FirstOrDefault(s => s.Servico == item.Servico);
+                if (servico != null)
+                    servico.Quantidade = item.Quantidade;
             }
-
-            _isCarregandoEdicao = false;
         }
 
-        // ===============================
-        // SALVAR NOVO
-        // ===============================
-        private void SalvarOrcamento()
+        private ObservableCollection<ItemOrdemServico> ObterListaServicos(EBlocoMotor bloco)
         {
-            using var db = new AppDbContext();
-
-            var orcamento = new Orcamentos
+            return bloco switch
             {
-                Data = DateTime.Now
+                EBlocoMotor.Biela => ItensBiela,
+                EBlocoMotor.Bloco => ItensBloco,
+                EBlocoMotor.Cabecote => ItensCabecote,
+                EBlocoMotor.Eixo => ItensEixo,
+                EBlocoMotor.Motor => ItensMotor,
+                _ => null
             };
-
-            PreencherEntidade(orcamento);
-            db.Orcamentos.Add(orcamento);
-            db.SaveChanges();
-
-            _orcamentoId = orcamento.Id;
-
-            GerarPdfRecarregado();
-            MessageBox.Show("Orçamento salvo com sucesso!");
-        }
-
-        // ===============================
-        // ATUALIZAR
-        // ===============================
-        private void AtualizarOrcamento()
-        {
-            using var db = new AppDbContext();
-
-            var orcamento = db.Orcamentos
-                .Include(o => o.Itens)
-                .First(o => o.Id == _orcamentoId);
-
-            PreencherEntidade(orcamento);
-            db.SaveChanges();
-
-            GerarPdfRecarregado();
-            MessageBox.Show("Orçamento atualizado com sucesso!");
-        }
-
-        // ===============================
-        // PREENCHIMENTO PADRÃO
-        // ===============================
-        private void PreencherEntidade(Orcamentos orcamento)
-        {
-            var itens = TodasColecoes()
-                .SelectMany(c => c)
-                .Where(i => i.Quantidade > 0)
-                .ToList();
-
-            orcamento.Itens.Clear();
-
-            orcamento.ClienteId = ClienteSelecionado?.Id;
-            orcamento.ClienteNome = ClienteSelecionado?.Nome ?? TextoClienteDigitado;
-            orcamento.ClienteEndereco = ClienteSelecionado?.Endereco ?? ClienteEndereco;
-            orcamento.ClienteTelefone = ClienteSelecionado?.Telefone ?? ClienteTelefone;
-            orcamento.Veiculo = Veiculo;
-            orcamento.Placa = Placa;
-            orcamento.TipoMotor = TipoMotorSelecionado;
-            orcamento.Total = itens.Sum(i => i.Total);
-
-            foreach (var i in itens)
-            {
-                orcamento.Itens.Add(new ItemOrcamento
-                {
-                    Servico = i.Servico,
-                    Quantidade = i.Quantidade,
-                    ValorUnitario = i.ValorUnitario,
-                    Bloco = i.Bloco,
-                    IsPeca = i.IsPeca
-                });
-            }
-        }
-
-        // ===============================
-        // PDF (SEMPRE DO BANCO)
-        // ===============================
-        private void GerarPdfRecarregado()
-        {
-            using var db = new AppDbContext();
-
-            var atualizado = db.Orcamentos
-                .Include(o => o.Itens)
-                .First(o => o.Id == _orcamentoId);
-
-            var caminho = Path.Combine(
-                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
-                "PDFs",
-                "Orcamentos",
-                $"ORCAMENTO_{atualizado.Id}.pdf"
-            );
-
-            if (File.Exists(caminho))
-                File.Delete(caminho); // 🔥 ISSO EVITA PDF FANTASMA
-
-            new OrcamentoPdf(atualizado).GeneratePdf(caminho);
-        }
-
-
-        // ===============================
-        // CONVERTER PARA OS
-        // ===============================
-        private void ConverterParaOs()
-        {
-            using var db = new AppDbContext();
-
-            var orcamento = db.Orcamentos
-                .Include(o => o.Itens)
-                .First(o => o.Id == _orcamentoId);
-
-            new OrcamentoService().ConverterEmOsEExcluir(orcamento);
-            MessageBox.Show("Ordem de Serviço criada!");
-        }
-
-        // ===============================
-        private bool PodeSalvar() =>
-            !string.IsNullOrWhiteSpace(Veiculo) &&
-            !string.IsNullOrWhiteSpace(Placa) &&
-            TodasColecoes().SelectMany(c => c).Any();
-
-        private void LimparColecoes()
-        {
-            foreach (var c in TodasColecoes())
-                c.Clear();
-        }
-
-        private void AdicionarServico(ItemOrdemServico item)
-        {
-            switch (item.Bloco)
-            {
-                case EBlocoMotor.Biela: ItensBiela.Add(item); break;
-                case EBlocoMotor.Bloco: ItensBloco.Add(item); break;
-                case EBlocoMotor.Cabecote: ItensCabecote.Add(item); break;
-                case EBlocoMotor.Eixo: ItensEixo.Add(item); break;
-                case EBlocoMotor.Motor: ItensMotor.Add(item); break;
-            }
         }
 
         private void AdicionarPeca(ItemOrdemServico item)
@@ -307,9 +239,87 @@ namespace MecAppIN.ViewModels
             }
         }
 
+        // ===============================
+        // SALVAR / ATUALIZAR
+        // ===============================
+        private void SalvarOrcamento()
+        {
+            using var db = new AppDbContext();
+            var orcamento = new Orcamentos { Data = System.DateTime.Now };
+            PreencherEntidade(orcamento);
+            db.Orcamentos.Add(orcamento);
+            db.SaveChanges();
+            _orcamentoId = orcamento.Id;
+            GerarPdfRecarregado();
+            MessageBox.Show("Orçamento salvo com sucesso!");
+        }
+
+        private void AtualizarOrcamento()
+        {
+            using var db = new AppDbContext();
+            var orcamento = db.Orcamentos.Include(o => o.Itens).First(o => o.Id == _orcamentoId);
+            PreencherEntidade(orcamento);
+            db.SaveChanges();
+            GerarPdfRecarregado();
+            MessageBox.Show("Orçamento atualizado com sucesso!");
+        }
+
+        private void PreencherEntidade(Orcamentos orcamento)
+        {
+            var itens = TodasColecoes().SelectMany(c => c).Where(i => i.Quantidade > 0).ToList();
+            orcamento.Itens.Clear();
+            orcamento.ClienteId = ClienteSelecionado?.Id;
+            orcamento.ClienteNome = ClienteSelecionado?.Nome ?? TextoClienteDigitado;
+            orcamento.ClienteEndereco = ClienteSelecionado?.Endereco ?? ClienteEndereco;
+            orcamento.ClienteTelefone = ClienteSelecionado?.Telefone ?? ClienteTelefone;
+            orcamento.Veiculo = Veiculo;
+            orcamento.Placa = Placa;
+            orcamento.TipoMotor = TipoMotorSelecionado;
+            orcamento.Total = itens.Sum(i => i.Total);
+
+            foreach (var i in itens)
+                orcamento.Itens.Add(new ItemOrcamento
+                {
+                    Servico = i.Servico,
+                    Quantidade = i.Quantidade,
+                    ValorUnitario = i.ValorUnitario,
+                    Bloco = i.Bloco,
+                    IsPeca = i.IsPeca
+                });
+        }
+
+        private void GerarPdfRecarregado()
+        {
+            using var db = new AppDbContext();
+
+            var atualizado = db.Orcamentos
+                .Include(o => o.Itens)
+                .First(o => o.Id == _orcamentoId);
+
+            var caminho = PdfPathHelper.ObterCaminhoOrcamento(atualizado);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho));
+
+            if (File.Exists(caminho))
+                File.Delete(caminho);
+
+            new OrcamentoPdf(atualizado).GeneratePdf(caminho);
+        }
+
+        private void ConverterParaOs()
+        {
+            using var db = new AppDbContext();
+            var orcamento = db.Orcamentos.Include(o => o.Itens).First(o => o.Id == _orcamentoId);
+            new OrcamentoService().ConverterEmOsEExcluir(orcamento);
+            MessageBox.Show("Ordem de Serviço criada!");
+        }
+
+        private bool PodeSalvar() =>
+            !string.IsNullOrWhiteSpace(Veiculo) &&
+            !string.IsNullOrWhiteSpace(Placa);
+
         public new event PropertyChangedEventHandler PropertyChanged;
         protected new void OnPropertyChanged([CallerMemberName] string prop = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
 }
-

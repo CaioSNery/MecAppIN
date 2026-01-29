@@ -101,8 +101,8 @@
                 </Border>
 
                 <!-- ===============================
-                             DATAGRID
-                 =============================== -->
+     DATAGRID
+=============================== -->
                 <DataGrid ItemsSource="{Binding Ordens}"
                           SelectedItem="{Binding OrdemSelecionada}"
                           AutoGenerateColumns="False"
@@ -110,14 +110,21 @@
                           IsReadOnly="True"
                           MouseDoubleClick="DataGrid_MouseDoubleClick">
 
-
-                        <!-- 🎨 COR DAS LINHAS -->
+                        <!-- 🎨 COR DAS LINHAS + TOOLTIP -->
                         <DataGrid.RowStyle>
                                 <Style TargetType="DataGridRow">
 
                                         <!-- padrão -->
                                         <Setter Property="Background"
                                                 Value="White"/>
+
+                                        <!-- 🔹 TOOLTIP COM DATA DE PAGAMENTO -->
+                                        <Setter Property="ToolTip">
+                                                <Setter.Value>
+                                                        <TextBlock Text="{Binding DataPagamento,
+                        Converter={StaticResource DataPagamentoTooltipConverter}}"/>
+                                                </Setter.Value>
+                                        </Setter>
 
                                         <Style.Triggers>
 
@@ -135,7 +142,7 @@
                                                                 Value="#FDECEA"/>
                                                 </DataTrigger>
 
-                                                <!-- 🔵 SELEÇÃO (não perder o azul) -->
+                                                <!-- 🔵 SELEÇÃO -->
                                                 <Trigger Property="IsSelected"
                                                          Value="True">
                                                         <Setter Property="Background"
@@ -167,7 +174,6 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-
                                 <DataGridTextColumn Header="Data"
                                                     Binding="{Binding Data, StringFormat=dd/MM/yyyy}"
                                                     Width="120"/>
@@ -190,6 +196,7 @@
 
                         </DataGrid.Columns>
                 </DataGrid>
+
 
 
 

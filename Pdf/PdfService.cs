@@ -43,12 +43,7 @@ namespace MecAppIN.Pdfs
         {
             AbrirPdf(caminhoPdf);
 
-            MessageBox.Show(
-                "O PDF foi aberto.\nUtilize o botão IMPRIMIR",
-                "Impressão",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
+           
         }
     }
 }

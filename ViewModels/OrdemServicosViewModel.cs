@@ -1,6 +1,7 @@
 using MecAppIN.Commands;
 using MecAppIN.Data;
 using MecAppIN.Enums;
+using MecAppIN.Helpers;
 using MecAppIN.Models;
 using MecAppIN.Pdf;
 using MecAppIN.Pdfs;
@@ -8,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -107,8 +107,6 @@ namespace MecAppIN.ViewModels
 
 
 
-
-
         public ICommand AtualizarOsCommand { get; }
         public ICommand SalvarComoOrcamentoCommand { get; }
         public ICommand ImprimirOsCommand { get; }
@@ -158,10 +156,11 @@ namespace MecAppIN.ViewModels
             ImprimirOsCommand = new RelayCommand(ImprimirOs);
             AtualizarOsCommand = new RelayCommand(AtualizarOs, () => Editando);
             SalvarComoOrcamentoCommand = new RelayCommand(
-    SalvarComoOrcamento,
-    PodeSalvarComoOrcamento
-);
+            SalvarComoOrcamento,
+            PodeSalvarComoOrcamento
+            );
         }
+
 
         private bool PodeSalvarComoOrcamento()
         {
@@ -238,92 +237,93 @@ namespace MecAppIN.ViewModels
                 .Include(o => o.Itens)
                 .First(o => o.Id == id);
 
-            // Dados principais
+            // ===============================
+            // DADOS PRINCIPAIS
+            // ===============================
             NumeroOs = os.Id;
             Veiculo = os.Veiculo;
             Placa = os.Placa;
             TextoClienteDigitado = os.ClienteNome;
+            TipoMotorSelecionado = os.TipoMotor;
 
+            // ===============================
+            // GARANTE SERVIÇOS PADRÃO
+            // (se já existir, não duplica)
+            // ===============================
+            GarantirServicosPadrao(ItensBiela, CarregarItensBiela);
+            GarantirServicosPadrao(ItensBloco, CarregarItensBloco);
+            GarantirServicosPadrao(ItensCabecote, CarregarItensCabecote);
+            GarantirServicosPadrao(ItensEixo, CarregarItensEixo);
+            GarantirServicosPadrao(ItensMotor, CarregarItensMotor);
 
-            // Limpa tudo
-            LimparColecoes();
-
-            // Recarrega itens
+            // ===============================
+            // APLICA ITENS DA OS
+            // ===============================
             foreach (var item in os.Itens)
             {
                 if (item.IsPeca)
-                    AdicionarPeca(item);
-                else
-                    AdicionarServico(item);
+                {
+                    var destino = ObterListaPecasPorBloco(item.Bloco);
+
+                    destino.Add(new ItemOrdemServico
+                    {
+                        Bloco = item.Bloco,
+                        Servico = item.Servico,
+                        Quantidade = item.Quantidade,
+                        ValorUnitario = item.ValorUnitario,
+                        IsPeca = true
+                    });
+
+                    continue;
+                }
+
+                // ===== SERVIÇO =====
+                var lista = ObterListaPorBloco(item.Bloco);
+
+                var servico = lista.FirstOrDefault(s =>
+                    s.Servico == item.Servico);
+
+                if (servico != null)
+                {
+                    servico.Quantidade = item.Quantidade;
+                    servico.ValorUnitario = item.ValorUnitario;
+                }
             }
 
             OnPropertyChanged(nameof(TotalServicos));
             OnPropertyChanged(nameof(TotalPecas));
             OnPropertyChanged(nameof(TotalGeral));
         }
-
-        private void AdicionarPeca(ItemOrdemServico item)
+        private ObservableCollection<ItemOrdemServico> ObterListaPecasPorBloco(EBlocoMotor bloco)
         {
-            var nova = new ItemOrdemServico
+            return bloco switch
             {
-                Bloco = item.Bloco,
-                Servico = item.Servico,
-                Quantidade = item.Quantidade,
-                ValorUnitario = item.ValorUnitario,
-                IsPeca = true
+                EBlocoMotor.Biela => PecasBiela,
+                EBlocoMotor.Bloco => PecasBloco,
+                EBlocoMotor.Cabecote => PecasCabecote,
+                EBlocoMotor.Eixo => PecasEixo,
+                EBlocoMotor.Motor => PecasMotor,
+                _ => throw new ArgumentOutOfRangeException()
             };
-
-            switch (item.Bloco)
-            {
-                case EBlocoMotor.Biela:
-                    PecasBiela.Add(nova);
-                    break;
-                case EBlocoMotor.Bloco:
-                    PecasBloco.Add(nova);
-                    break;
-                case EBlocoMotor.Cabecote:
-                    PecasCabecote.Add(nova);
-                    break;
-                case EBlocoMotor.Eixo:
-                    PecasEixo.Add(nova);
-                    break;
-                case EBlocoMotor.Motor:
-                    PecasMotor.Add(nova);
-                    break;
-            }
         }
-
-
-        private void AdicionarServico(ItemOrdemServico item)
+        private void GarantirServicosPadrao(
+            ObservableCollection<ItemOrdemServico> lista,
+            Action carregarPadrao)
         {
-            var novo = new ItemOrdemServico
+            if (lista.Count == 0)
+                carregarPadrao();
+        }
+        private ObservableCollection<ItemOrdemServico> ObterListaPorBloco(EBlocoMotor bloco)
+        {
+            return bloco switch
             {
-                Bloco = item.Bloco,
-                Servico = item.Servico,
-                Quantidade = item.Quantidade,
-                ValorUnitario = item.ValorUnitario,
-                IsPeca = false,
-                ValorEditavel = true
+                EBlocoMotor.Biela => ItensBiela,
+                EBlocoMotor.Bloco => ItensBloco,
+                EBlocoMotor.Cabecote => ItensCabecote,
+                EBlocoMotor.Eixo => ItensEixo,
+                EBlocoMotor.Motor => ItensMotor,
+                _ => throw new ArgumentOutOfRangeException()
             };
-
-            switch (item.Bloco)
-            {
-                case EBlocoMotor.Biela:
-                    ItensBiela.Add(novo);
-                    break;
-                case EBlocoMotor.Bloco:
-                    ItensBloco.Add(novo);
-                    break;
-                case EBlocoMotor.Cabecote:
-                    ItensCabecote.Add(novo);
-                    break;
-                case EBlocoMotor.Eixo:
-                    ItensEixo.Add(novo);
-                    break;
-                case EBlocoMotor.Motor:
-                    ItensMotor.Add(novo);
-                    break;
-            }
         }
 
 
@@ -341,9 +341,6 @@ namespace MecAppIN.ViewModels
             PecasEixo.Clear();
             PecasMotor.Clear();
         }
-
-
-
 
 
         private void RegistrarEventos(ObservableCollection<ItemOrdemServico> itens)
@@ -389,288 +386,38 @@ namespace MecAppIN.ViewModels
         private void CarregarItensBiela()
         {
             ItensBiela.Clear();
-
-            ItensBiela.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Biela,
-                Servico = "Retificar",
-                Quantidade = 0,
-                ValorUnitario = 120,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensBiela.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Biela,
-                Servico = "Acoplar",
-                Quantidade = 0,
-                ValorUnitario = 50,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensBiela.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Biela,
-                Servico = "Embuchar",
-                Quantidade = 0,
-                ValorUnitario = 0,
-                IsPeca = false,
-                ValorEditavel = true // editável
-            });
-
-
+            foreach (var item in ItensMotorPadraoHelper.CriarItensBiela())
+                ItensBiela.Add(item);
         }
 
         private void CarregarItensBloco()
         {
             ItensBloco.Clear();
-
-            ItensBloco.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Bloco,
-                Servico = "Retificar Cilindro",
-                Quantidade = 0,
-                ValorUnitario = 150,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensBloco.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Bloco,
-                Servico = "Encamisar Cilindro",
-                Quantidade = 0,
-                ValorUnitario = 200,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensBloco.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Bloco,
-                Servico = "Brunir Cilindro",
-                Quantidade = 0,
-                ValorUnitario = 50,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensBloco.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Bloco,
-                Servico = "Mandrilhar Mancais",
-                Quantidade = 0,
-                ValorUnitario = 225,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensBloco.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Bloco,
-                Servico = "Facear",
-                Quantidade = 0,
-                ValorUnitario = 400,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-
+            foreach (var item in ItensMotorPadraoHelper.CriarItensBloco())
+                ItensBloco.Add(item);
         }
 
         public void CarregarItensCabecote()
         {
             ItensCabecote.Clear();
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Retificar Sede",
-                Quantidade = 0,
-                ValorUnitario = 12.50M,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Retificar Válvulas",
-                Quantidade = 0,
-                ValorUnitario = 12.50M,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Descarb./Esmer./Montar",
-                Quantidade = 0,
-                ValorUnitario = 21.25M,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Facear",
-                Quantidade = 0,
-                ValorUnitario = 200,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Calibrar Válvulas",
-                Quantidade = 0,
-                ValorUnitario = 25,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Mandrilhar",
-                Quantidade = 0,
-                ValorUnitario = 350,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Substituir Guia",
-                Quantidade = 0,
-                ValorUnitario = 80,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Recondic./ Solda",
-                Quantidade = 0,
-                ValorUnitario = 30,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensCabecote.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Cabecote,
-                Servico = "Extração de parafuso",
-                Quantidade = 0,
-                ValorUnitario = 70,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
+            foreach (var item in ItensMotorPadraoHelper.CriarItensCabecote())
+                ItensCabecote.Add(item);
         }
 
         public void CarregarItensEixo()
         {
             ItensEixo.Clear();
-
-            ItensEixo.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Eixo,
-                Servico = "Retificar Eixo ",
-                Quantidade = 0,
-                ValorUnitario = 320,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensEixo.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Eixo,
-                Servico = "Polir Eixo",
-                Quantidade = 0,
-                ValorUnitario = 140,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensEixo.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Eixo,
-                Servico = "Polir Eixo de comando",
-                Quantidade = 0,
-                ValorUnitario = 80,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensEixo.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Eixo,
-                Servico = "Recuperar lateral",
-                Quantidade = 0,
-                ValorUnitario = 180,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-
-
+            foreach (var item in ItensMotorPadraoHelper.CriarItensEixo())
+                ItensEixo.Add(item);
         }
 
         public void CarregarItensMotor()
         {
-
             ItensMotor.Clear();
-
-            ItensMotor.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Motor,
-                Servico = "Descarbonizar Motor",
-                Quantidade = 0,
-                ValorUnitario = 100,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensMotor.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Motor,
-                Servico = "Montagem parcial",
-                Quantidade = 0,
-                ValorUnitario = 0,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensMotor.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Motor,
-                Servico = "Montagem completa",
-                Quantidade = 0,
-                ValorUnitario = 0,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-            ItensMotor.Add(new ItemOrdemServico
-            {
-                Bloco = EBlocoMotor.Motor,
-                Servico = "Serviço de Troca",
-                Quantidade = 0,
-                ValorUnitario = 0,
-                IsPeca = false,
-                ValorEditavel = true
-            });
-
-
+            foreach (var item in ItensMotorPadraoHelper.CriarItensMotor())
+                ItensMotor.Add(item);
         }
+
 
         // ===============================
         // ITENS POR MOTOR
@@ -879,51 +626,27 @@ namespace MecAppIN.ViewModels
 
         private void GerarPdfOrcamento(Orcamentos orcamento)
         {
-            var basePath = Path.Combine(
-                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
-                "PDFs",
-                "Orcamentos",
-                orcamento.Data.Year.ToString(),
-                orcamento.Data.Month.ToString("D2")
-            );
+            var caminho = PdfPathHelper.ObterCaminhoOrcamento(orcamento);
 
-            Directory.CreateDirectory(basePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho)!);
 
-            var caminho = Path.Combine(
-                basePath,
-                $"ORCAMENTO_{orcamento.Id}.pdf"
-            );
-
-            var pdf = new OrcamentoPdf(orcamento);
-            pdf.GeneratePdf(caminho);
+            new OrcamentoPdf(orcamento).GeneratePdf(caminho);
         }
-
-
 
 
 
         private string GerarPdfInterno(OrdemServicos os)
         {
-            var basePath = Path.Combine(
-                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
-                "PDFs",
-                "OrdensDeServico",
-                DateTime.Now.Year.ToString(),
-                DateTime.Now.Month.ToString("D2")
-            );
+            var caminhoPdf = PdfPathHelper.ObterCaminhoOs(os);
 
-            Directory.CreateDirectory(basePath);
-
-            var caminhoPdf = Path.Combine(
-                basePath,
-                $"OS_{os.Id}.pdf"
-            );
+            Directory.CreateDirectory(Path.GetDirectoryName(caminhoPdf)!);
 
             var pdf = new OrdemServicoPdf(os);
             pdf.GeneratePdf(caminhoPdf);
 
             return caminhoPdf;
         }
+
 
     }
 }

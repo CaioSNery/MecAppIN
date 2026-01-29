@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using MecAppIN.Models;
 
 public class OrdemServicos : INotifyPropertyChanged
@@ -31,6 +32,10 @@ public class OrdemServicos : INotifyPropertyChanged
             OnPropertyChanged(nameof(Pago));
         }
     }
+    public DateTime? DataPagamento { get; set; }
+    
+    [NotMapped]
+    public bool PagoAnterior { get; set; }
 
     public decimal Total { get; set; }
     public int? OrcamentoId { get; set; }
