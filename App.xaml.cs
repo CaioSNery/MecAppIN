@@ -1,5 +1,6 @@
 ﻿
 using System.Windows;
+using MecAppIN.Data;
 using QuestPDF.Infrastructure;
 
 namespace MecAppIN;
@@ -12,6 +13,9 @@ public partial class App : Application
     public App()
     {
         QuestPDF.Settings.License = LicenseType.Community;
+           // INICIALIZA BANCO
+            DbBootstrapper.InicializarBanco(1059);
+
     }
 }
 

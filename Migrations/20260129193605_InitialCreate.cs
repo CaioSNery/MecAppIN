@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MecAppIN.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,8 +52,11 @@ namespace MecAppIN.Migrations
                     Data = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ClienteId = table.Column<int>(type: "INTEGER", nullable: true),
                     ClienteNome = table.Column<string>(type: "TEXT", nullable: true),
+                    ClienteTelefone = table.Column<string>(type: "TEXT", nullable: true),
+                    ClienteEndereco = table.Column<string>(type: "TEXT", nullable: true),
                     Veiculo = table.Column<string>(type: "TEXT", nullable: true),
                     Placa = table.Column<string>(type: "TEXT", nullable: true),
+                    TipoMotor = table.Column<string>(type: "TEXT", nullable: true),
                     Total = table.Column<decimal>(type: "TEXT", nullable: false),
                     NumeroOs = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -71,11 +74,13 @@ namespace MecAppIN.Migrations
                     Data = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ClienteId = table.Column<int>(type: "INTEGER", nullable: true),
                     ClienteNome = table.Column<string>(type: "TEXT", nullable: true),
+                    ClienteTelefone = table.Column<string>(type: "TEXT", nullable: true),
                     ClienteEndereco = table.Column<string>(type: "TEXT", nullable: true),
                     Veiculo = table.Column<string>(type: "TEXT", nullable: true),
                     Placa = table.Column<string>(type: "TEXT", nullable: true),
                     TipoMotor = table.Column<string>(type: "TEXT", nullable: true),
                     Pago = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0),
+                    DataPagamento = table.Column<DateTime>(type: "TEXT", nullable: true),
                     Total = table.Column<decimal>(type: "TEXT", nullable: false),
                     OrcamentoId = table.Column<int>(type: "INTEGER", nullable: true)
                 },

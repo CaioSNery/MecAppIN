@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MecAppIN.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260129132954_SalvoBanco")]
-    partial class SalvoBanco
+    [Migration("20260129193605_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
