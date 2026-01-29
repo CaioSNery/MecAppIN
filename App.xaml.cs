@@ -1,21 +1,18 @@
-﻿
-using System.Windows;
-using MecAppIN.Data;
+﻿using MecAppIN.Data;
 using QuestPDF.Infrastructure;
+using System.Windows;
 
-namespace MecAppIN;
-
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application
+namespace MecAppIN
+{
+ public partial class App : Application
 {
     public App()
     {
         QuestPDF.Settings.License = LicenseType.Community;
-           // INICIALIZA BANCO
-            DbBootstrapper.InicializarBanco(1059);
 
+        
     }
 }
 
+
+}

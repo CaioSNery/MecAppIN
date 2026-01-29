@@ -59,7 +59,7 @@
                 <StackPanel HorizontalAlignment="Center">
 
                     <!-- Nome da loja -->
-                    <TextBlock Text="B.N.W Retífica e Oficina"
+                    <TextBlock Text="Retífica e Oficina"
                                Foreground="White"
                                FontSize="18"
                                FontWeight="Bold"
@@ -68,7 +68,7 @@
                                TextWrapping="Wrap"/>
 
                     <!-- LOGO -->
-                    <Image Source="/Images/bnwLOGO.png"
+                    <Image Source="/Images/SuaLogoAqui.jpg"
                            Width="80"
                            Height="80"
                            HorizontalAlignment="Center"

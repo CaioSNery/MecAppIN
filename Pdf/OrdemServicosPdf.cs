@@ -39,12 +39,12 @@ public class OrdemServicoPdf : IDocument
     {
         container.Column(col =>
         {
-            col.Item().Text("BNW RETÍFICA")
+            col.Item().Text("SUA MARCA AQUI")
                 .Bold()
                 .FontSize(18);
 
-            col.Item().Text("Rua Lauro de Freitas 104 - São Cristóvão - Salvador/BA");
-            col.Item().Text("Telefone: (71)3252-6963/98722-0776");
+            col.Item().Text("Rua ");
+            col.Item().Text("Telefone: ");
 
             col.Item().PaddingTop(10).Row(row =>
 {
