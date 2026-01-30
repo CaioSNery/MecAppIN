@@ -212,7 +212,7 @@ namespace MecAppIN.ViewModels
             try
             {
                 // Remove PDF
-                var caminhoPdf = ObterCaminhoPdf(OrcamentoSelecionado);
+                var caminhoPdf = PdfPathHelper.ObterCaminhoOrcamento(OrcamentoSelecionado);
 
                 if (File.Exists(caminhoPdf))
                     File.Delete(caminhoPdf);
@@ -280,31 +280,31 @@ namespace MecAppIN.ViewModels
             var caminho = PdfPathHelper.ObterCaminhoOrcamento(atualizado);
             PdfService.AbrirPdf(caminho);
 
-            
+
         }
 
 
-        private string ObterCaminhoPdf(Orcamentos o)
-        {
-            return Path.Combine(
-                @"C:\Users\USER\Desktop\Projetos\MecAppIN",
-                "PDFs",
-                "Orcamentos",
-                o.Data.Year.ToString(),
-                o.Data.Month.ToString("D2"),
-                $"ORCAMENTO_{o.Id}.pdf"
-            );
-        }
+        
 
         private void ImprimirOrcamento()
         {
             if (OrcamentoSelecionado == null)
                 return;
 
-            var caminhoPdf = ObterCaminhoPdf(OrcamentoSelecionado);
+            var caminhoPdf = PdfPathHelper.ObterCaminhoOrcamento(OrcamentoSelecionado);
+
+            if (!File.Exists(caminhoPdf))
+            {
+                MessageBox.Show(
+                    "PDF não encontrado para esta OS.",
+                    "PDF",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
 
             PdfService.ImprimirPdfSeguro(caminhoPdf);
-
         }
 
 

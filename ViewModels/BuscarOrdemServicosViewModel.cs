@@ -279,8 +279,12 @@ namespace MecAppIN.ViewModels
             using var db = new AppDbContext();
 
             var entidade = db.OrdemServicos
-                .Include(o => o.Itens)
-                .First(o => o.Id == os.Id);
+     .Include(o => o.Itens)
+     .FirstOrDefault(o => o.Id == os.Id);
+
+            if (entidade == null)
+                return; // OS já foi excluída
+
 
             entidade.Pago = os.Pago;
             entidade.DataPagamento = os.DataPagamento;
@@ -313,11 +317,6 @@ namespace MecAppIN.ViewModels
             var pdf = new OrdemServicoPdf(os);
             pdf.GeneratePdf(caminho);
         }
-
-
-
-
-
 
 
         // ===============================
@@ -389,21 +388,30 @@ namespace MecAppIN.ViewModels
 
             try
             {
+                var id = OrdemSelecionada.Id;
 
+                // Remove PDF
                 var caminhoPdf = PdfPathHelper.ObterCaminhoOs(OrdemSelecionada);
-
                 if (File.Exists(caminhoPdf))
-                {
                     File.Delete(caminhoPdf);
+
+                // Remove do banco
+                using (var db = new AppDbContext())
+                {
+                    var entidade = db.OrdemServicos.FirstOrDefault(o => o.Id == id);
+                    if (entidade != null)
+                    {
+                        db.OrdemServicos.Remove(entidade);
+                        db.SaveChanges();
+                    }
                 }
 
+                // 🔥 REMOVE DA MEMÓRIA TAMBÉM
+                _todasOrdens.RemoveAll(o => o.Id == id);
 
-                using var db = new AppDbContext();
-                db.OrdemServicos.Remove(OrdemSelecionada);
-                db.SaveChanges();
-
-
-                Ordens.Remove(OrdemSelecionada);
+                // Atualiza UI corretamente
+                Filtrar();
+                OrdemSelecionada = null;
             }
             catch (Exception ex)
             {
@@ -415,6 +423,7 @@ namespace MecAppIN.ViewModels
                 );
             }
         }
+
 
 
         private void Editar()

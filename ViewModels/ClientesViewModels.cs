@@ -74,7 +74,7 @@ namespace MecAppIN.ViewModels
 
             ClienteSelecionado = new Clientes();
 
-            NovoCommand = new RelayCommand(Novo);
+
             SalvarCommand = new RelayCommand(Salvar);
             ExcluirCommand = new RelayCommand(Excluir);
             ProximaPaginaCommand = new RelayCommand(ProximaPagina);
@@ -100,7 +100,7 @@ namespace MecAppIN.ViewModels
             CarregarClientes();
         }
 
-    
+
 
         private void CarregarClientes()
         {
@@ -111,10 +111,12 @@ namespace MecAppIN.ViewModels
             var query = db.Clientes.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(TextoBusca))
-                query = query.Where(c => c.Nome.Contains(TextoBusca));
-
+            {
+                var termo = TextoBusca.ToLower();
+                query = query.Where(c => c.Nome.ToLower().Contains(termo));
+            }
+            
             var totalRegistros = query.Count();
-
             TotalPaginas = (int)Math.Ceiling(
                 totalRegistros / (double)TamanhoPagina
             );
@@ -134,10 +136,6 @@ namespace MecAppIN.ViewModels
 
 
 
-        private void Novo()
-        {
-            ClienteSelecionado = new Clientes();
-        }
 
         private void Salvar()
         {
