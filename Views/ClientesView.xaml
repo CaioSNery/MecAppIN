@@ -28,7 +28,7 @@
                       SelectionUnit="FullRow"
                       HeadersVisibility="Column"
                       RowHeaderWidth="0"
-                      Height="350"
+                      Height="550"
                       HorizontalAlignment="Stretch"
                       ColumnWidth="*">
 

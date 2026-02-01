@@ -35,7 +35,7 @@ namespace MecAppIN.ViewModels
 
 
         private int _paginaAtual = 1;
-        private const int TamanhoPagina = 20;
+        private const int TamanhoPagina = 30;
 
         public int PaginaAtual
         {
