@@ -293,12 +293,13 @@ namespace MecAppIN.ViewModels
             using var db = new AppDbContext();
 
             var atualizado = db.Orcamentos
+                .AsNoTracking()
                 .Include(o => o.Itens)
                 .First(o => o.Id == _orcamentoId);
 
             var caminho = PdfPathHelper.ObterCaminhoOrcamento(atualizado);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(caminho));
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho)!);
 
             if (File.Exists(caminho))
                 File.Delete(caminho);
@@ -307,12 +308,55 @@ namespace MecAppIN.ViewModels
         }
 
         private void ConverterParaOs()
-        {
-            using var db = new AppDbContext();
-            var orcamento = db.Orcamentos.Include(o => o.Itens).First(o => o.Id == _orcamentoId);
-            new OrcamentoService().ConverterEmOsEExcluir(orcamento);
-            MessageBox.Show("Ordem de Serviço criada!");
-        }
+{
+    try
+    {
+        var service = new OrcamentoService();
+
+        // 1️⃣ Converte e retorna o ID da OS
+        var osId = service.ConverterEmOsEExcluir(_orcamentoId);
+
+        // 2️⃣ Recarrega a OS do banco (CRÍTICO)
+        using var db = new AppDbContext();
+
+        var os = db.OrdemServicos
+    .AsNoTracking()
+    .Include(o => o.Itens)
+    .First(o => o.Id == osId);
+
+// 🔒 GARANTIA FINAL
+if (os.Data == default)
+    os.Data = DateTime.Now;
+
+        // 3️⃣ Gera PDF DA OS
+        GerarPdfOs(os);
+
+        MessageBox.Show("Ordem de Serviço criada!");
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(ex.Message, "Erro");
+    }
+}
+
+
+
+
+        private void GerarPdfOs(OrdemServicos os)
+{
+    var caminho = PdfPathHelper.ObterCaminhoOs(os);
+
+    Directory.CreateDirectory(Path.GetDirectoryName(caminho)!);
+
+    if (File.Exists(caminho))
+        File.Delete(caminho);
+
+    new OrdemServicoPdf(os).GeneratePdf(caminho);
+}
+
+
+
+
 
         private bool PodeSalvar() =>
             !string.IsNullOrWhiteSpace(Veiculo) &&

@@ -258,7 +258,8 @@ namespace MecAppIN.ViewModels
         private void CriarOrdemServico()
         {
             var service = new OrcamentoService();
-            service.ConverterEmOsEExcluir(OrcamentoSelecionado);
+            service.ConverterEmOsEExcluir(OrcamentoSelecionado.Id);
+
 
             _todosOrcamentos.Remove(OrcamentoSelecionado);
             Filtrar();
@@ -280,11 +281,9 @@ namespace MecAppIN.ViewModels
             var caminho = PdfPathHelper.ObterCaminhoOrcamento(atualizado);
             PdfService.AbrirPdf(caminho);
 
-
+            
         }
 
-
-        
 
         private void ImprimirOrcamento()
         {

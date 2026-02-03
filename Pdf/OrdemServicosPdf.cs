@@ -39,12 +39,12 @@ public class OrdemServicoPdf : IDocument
     {
         container.Column(col =>
         {
-            col.Item().Text("SUA MARCA AQUI")
+            col.Item().Text("BNW RETÍFICA")
                 .Bold()
                 .FontSize(18);
 
-            col.Item().Text("Rua ");
-            col.Item().Text("Telefone: ");
+            col.Item().Text("Rua Lauro de Freitas 104 - São Cristóvão - Salvador/BA");
+            col.Item().Text("Telefone: (71)98722-0776");
 
             col.Item().PaddingTop(10).Row(row =>
 {
@@ -52,7 +52,9 @@ public class OrdemServicoPdf : IDocument
     row.RelativeItem().Column(left =>
     {
         left.Item()
-            .Text($"OS Nº: {_os.Id}  |  Motor: {_os.TipoMotor}");
+    .Text($"OS Nº: {NumeroFormatado()}  |  Motor: {_os.TipoMotor}");
+
+
 
         // 🔰 SELO DE OS PAGA
         if (_os.Pago)
@@ -165,6 +167,14 @@ public class OrdemServicoPdf : IDocument
 
         });
     }
+
+    string NumeroFormatado()
+    {
+        var prefixo = _os.TipoMotor == "Diesel" ? "D" : "G";
+        return $"{prefixo}-{_os.Id}";
+    }
+
+
 
     void TabelaPadrao(
     IContainer container,

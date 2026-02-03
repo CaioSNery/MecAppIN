@@ -1,5 +1,6 @@
-﻿using QuestPDF.Infrastructure;
-using System.Windows;
+﻿using System.Windows;
+using MecAppIN.Data;
+using QuestPDF.Infrastructure;
 
 namespace MecAppIN
 {
@@ -7,15 +8,20 @@ namespace MecAppIN
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            // Licença do QuestPDF
+            //  Licença
             QuestPDF.Settings.License = LicenseType.Community;
 
-            // Captura de erro (diagnóstico)
+            //  Tratamento global de erro
             DispatcherUnhandledException += (s, ex) =>
             {
-                MessageBox.Show(ex.Exception.ToString(), "ERRO CAPTURADO");
-                ex.Handled = true;
+               MessageBox.Show(ex.Exception.Message, "Erro crítico");
+               Environment.Exit(1);
             };
+
+
+            // Inicialização do banco
+            DbBootstrapper.InicializarBanco();
+
 
             base.OnStartup(e);
         }

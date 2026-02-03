@@ -12,18 +12,18 @@ namespace MecAppIN.Data
         public DbSet<LancamentoFinanceiro> Lancamentos { get; set; }
         public DbSet<ItemOrdemServico> ItensOrdensServicos { get; set; }
         public DbSet<OrdemServicos> OrdemServicos { get; set; }
+        public DbSet<SequenciaOs> SequenciasOs { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseSqlite("Data Source=oficina.db");
         }
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<OrdemServicos>()
                 .Property(o => o.Pago)
-                .HasConversion<int>()
+                .HasConversion<int>()  
                 .HasDefaultValue(0);
         }
 

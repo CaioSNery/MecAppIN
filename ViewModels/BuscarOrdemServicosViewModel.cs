@@ -279,8 +279,8 @@ namespace MecAppIN.ViewModels
             using var db = new AppDbContext();
 
             var entidade = db.OrdemServicos
-     .Include(o => o.Itens)
-     .FirstOrDefault(o => o.Id == os.Id);
+    .Include(o => o.Itens)
+    .FirstOrDefault(o => o.Id == os.Id);
 
             if (entidade == null)
                 return; // OS já foi excluída
@@ -317,6 +317,11 @@ namespace MecAppIN.ViewModels
             var pdf = new OrdemServicoPdf(os);
             pdf.GeneratePdf(caminho);
         }
+
+
+
+
+
 
 
         // ===============================
@@ -406,7 +411,7 @@ namespace MecAppIN.ViewModels
                     }
                 }
 
-                // 🔥 REMOVE DA MEMÓRIA TAMBÉM
+                //  REMOVE DA MEMÓRIA TAMBÉM
                 _todasOrdens.RemoveAll(o => o.Id == id);
 
                 // Atualiza UI corretamente
@@ -451,13 +456,8 @@ namespace MecAppIN.ViewModels
 
             if (!File.Exists(caminhoPdf))
             {
-                MessageBox.Show(
-                    "PDF não encontrado para esta OS.",
-                    "PDF",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-                return;
+
+                GerarPdfOsAtualizado(OrdemSelecionada);
             }
 
             PdfService.ImprimirPdfSeguro(caminhoPdf);

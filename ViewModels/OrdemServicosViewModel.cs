@@ -508,8 +508,11 @@ namespace MecAppIN.ViewModels
 
                 if (NumeroOs == 0)
                 {
+                    NumeroOs = NumeroOsService.Gerar(TipoMotorSelecionado);
+
                     os = new OrdemServicos
                     {
+                        Id = NumeroOs, //  CONTROLE MANUAL
                         Data = DateTime.Now,
                         ClienteId = temCliente ? ClienteSelecionado.Id : null,
                         ClienteNome = temCliente ? ClienteSelecionado.Nome : TextoClienteDigitado,
@@ -525,6 +528,7 @@ namespace MecAppIN.ViewModels
                     db.OrdemServicos.Add(os);
                     db.SaveChanges();
                 }
+
                 else
                 {
                     os = db.OrdemServicos
@@ -620,6 +624,22 @@ namespace MecAppIN.ViewModels
 
             MessageBox.Show("Orçamento salvo com sucesso!");
         }
+
+        public static class NumeroOsService
+        {
+            public static int Gerar(string tipoMotor)
+            {
+                using var db = new AppDbContext();
+
+                var seq = db.SequenciasOs.Single(s => s.TipoMotor == tipoMotor);
+
+                seq.UltimoNumero++;
+                db.SaveChanges();
+
+                return seq.UltimoNumero;
+            }
+        }
+
 
 
 
